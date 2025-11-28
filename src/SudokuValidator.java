@@ -6,7 +6,7 @@
 
 /**
  *
- * @author User
+ *  @author kiro sherif
  */
 public interface SudokuValidator {
     ValidationResult validate(int[][] board);
