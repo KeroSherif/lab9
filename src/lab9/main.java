@@ -8,7 +8,7 @@ package lab9;
  *
  * @author User
  */
-public class Lab9 {
+public class main {
 
     /**
      * @param args the command line arguments
