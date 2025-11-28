@@ -8,8 +8,8 @@
  *
  * @author User
  */
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
 
 public class RowChecker implements Runnable {
     private final int[][] board;
