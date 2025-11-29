@@ -90,4 +90,35 @@ private void checkColumns() {
         }
     }
 
+ private void checkBoxes() {
+        for (int boxRow = 0; boxRow < 3; boxRow++) {
+            for (int boxCol = 0; boxCol < 3; boxCol++) {
+
+                boolean[] seen = new boolean[10];
+
+                int startRow = boxRow * 3;
+                int startCol = boxCol * 3;
+
+                for (int r = startRow; r < startRow + 3; r++) {
+                    for (int c = startCol; c < startCol + 3; c++) {
+
+                        int num = board[r][c];
+
+                        if (seen[num]) {
+                            valid = false;
+                            errors.add(
+                                "Duplicate number " + num +
+                                " found in BOX (" + (boxRow + 1) + "," + (boxCol + 1) + ")" +
+                                " at cell (" + (r + 1) + "," + (c + 1) + ")"
+                            );
+                        }
+
+                        seen[num] = true;
+                    }
+                }
+            }
+        }
+    }
+}
+
    
