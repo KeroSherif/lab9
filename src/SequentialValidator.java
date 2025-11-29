@@ -1,3 +1,5 @@
+package lab9;
+
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
@@ -8,68 +10,30 @@ import java.util.List;
  *
  * @author DANAH
  */
-interface Validator {
-    void validate();
-    boolean isValid();
-    void printReport();
-}
-
-public class SequentialValidator implements Validator {
-
-    private final int[][] board;       
-    private final List<String> errors; 
-    private boolean valid = true;     
-
-    public SequentialValidator(int[][] board) {
-        this.board = board;
-        this.errors = new ArrayList<>();
-    }
-    
-    @Override
-    public void validate() {
-        checkRows();
-        checkColumns();
-        checkBoxes();
-    }
+public class SequentialValidator implements SudokuValidator {
 
     @Override
-    public boolean isValid() {
-        return valid;
-    }
+    public ValidationResult validate(int[][] board) {
+        List<String> errors = new ArrayList<>();
+        boolean valid = true;
 
-    @Override
-    public void printReport() {
-        if (valid) {
-            System.out.println("VALID");
-        } else {
-            System.out.println("INVALID");
-            System.out.println("Details:");
-            errors.forEach(System.out::println);
-        }
-    }
-
-private void checkRows() {
         for (int row = 0; row < 9; row++) {
-            boolean[] seen = new boolean[10]; // digits 1–9
+            boolean[] seen = new boolean[10];
 
             for (int col = 0; col < 9; col++) {
                 int num = board[row][col];
 
                 if (seen[num]) {
                     valid = false;
-                    errors.add(
-                        "Duplicate number " + num +
-                        " found in ROW " + (row + 1) +
-                        " at column " + (col + 1)
-                    );
+                    errors.add("Duplicate " + num +
+                               " in ROW " + (row + 1) +
+                               " at column " + (col + 1));
                 }
 
                 seen[num] = true;
             }
         }
-    }
 
-private void checkColumns() {
         for (int col = 0; col < 9; col++) {
             boolean[] seen = new boolean[10];
 
@@ -78,24 +42,19 @@ private void checkColumns() {
 
                 if (seen[num]) {
                     valid = false;
-                    errors.add(
-                        "Duplicate number " + num +
-                        " found in COLUMN " + (col + 1) +
-                        " at row " + (row + 1)
-                    );
+                    errors.add("Duplicate " + num +
+                               " in COLUMN " + (col + 1) +
+                               " at row " + (row + 1));
                 }
 
                 seen[num] = true;
             }
         }
-    }
 
- private void checkBoxes() {
         for (int boxRow = 0; boxRow < 3; boxRow++) {
             for (int boxCol = 0; boxCol < 3; boxCol++) {
 
                 boolean[] seen = new boolean[10];
-
                 int startRow = boxRow * 3;
                 int startCol = boxCol * 3;
 
@@ -106,11 +65,9 @@ private void checkColumns() {
 
                         if (seen[num]) {
                             valid = false;
-                            errors.add(
-                                "Duplicate number " + num +
-                                " found in BOX (" + (boxRow + 1) + "," + (boxCol + 1) + ")" +
-                                " at cell (" + (r + 1) + "," + (c + 1) + ")"
-                            );
+                            errors.add("Duplicate " + num +
+                                       " in BOX (" + (boxRow + 1) + "," + (boxCol + 1) + ")" +
+                                       " at cell (" + (r + 1) + "," + (c + 1) + ")");
                         }
 
                         seen[num] = true;
@@ -118,7 +75,7 @@ private void checkColumns() {
                 }
             }
         }
+
+        return new ValidationResult(valid, errors);
     }
 }
-
-   
