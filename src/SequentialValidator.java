@@ -48,4 +48,25 @@ public class SequentialValidator implements Validator {
         }
     }
 
+private void checkRows() {
+        for (int row = 0; row < 9; row++) {
+            boolean[] seen = new boolean[10]; // digits 1–9
+
+            for (int col = 0; col < 9; col++) {
+                int num = board[row][col];
+
+                if (seen[num]) {
+                    valid = false;
+                    errors.add(
+                        "Duplicate number " + num +
+                        " found in ROW " + (row + 1) +
+                        " at column " + (col + 1)
+                    );
+                }
+
+                seen[num] = true;
+            }
+        }
+    }
+
    
