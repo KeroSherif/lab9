@@ -24,5 +24,28 @@ public class SequentialValidator implements Validator {
         this.board = board;
         this.errors = new ArrayList<>();
     }
+    
+    @Override
+    public void validate() {
+        checkRows();
+        checkColumns();
+        checkBoxes();
+    }
+
+    @Override
+    public boolean isValid() {
+        return valid;
+    }
+
+    @Override
+    public void printReport() {
+        if (valid) {
+            System.out.println("VALID");
+        } else {
+            System.out.println("INVALID");
+            System.out.println("Details:");
+            errors.forEach(System.out::println);
+        }
+    }
 
    
