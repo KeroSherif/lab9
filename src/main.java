@@ -7,8 +7,8 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-
-public class main {
+ا
+public class main{
 
     /**
      * @param args the command line arguments
