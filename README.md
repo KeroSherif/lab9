@@ -5,19 +5,19 @@ This app validates a 9x9 Sudoku board from a CSV file in three modes:
 - Mode 3: Three threads (rows, columns, boxes)
 - Mode 27: Thread pool with a task per check
 
-## Usage
-Compile:
+## Easy Run
+PowerShell (recommended):
 ```powershell
-Push-Location "c:\Users\Mohamed\OneDrive\Documents\Lab 9 prog2\lab9\src"
-javac *.java
-Pop-Location
+cd "c:\Users\Mohamed\OneDrive\Documents\Lab 9 prog2\lab9"
+./run.ps1 -Board .\samples\board-valid.csv -Mode 27
+./run.ps1 -Board .\samples\board-invalid.csv -Mode 27
 ```
-Run:
-```powershell
-Push-Location "c:\Users\Mohamed\OneDrive\Documents\Lab 9 prog2\lab9\src"
-java main "c:\Users\Mohamed\OneDrive\Documents\Lab 9 prog2\lab9\samples\board-valid.csv" 27
-java main "c:\Users\Mohamed\OneDrive\Documents\Lab 9 prog2\lab9\samples\board-invalid.csv" 27
-Pop-Location
+
+CMD (batch file):
+```bat
+cd /d "c:\Users\Mohamed\OneDrive\Documents\Lab 9 prog2\lab9"
+run.bat ".\samples\board-valid.csv" 27
+run.bat ".\samples\board-invalid.csv" 27
 ```
 
 Output:
