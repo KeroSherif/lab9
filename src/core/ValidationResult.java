@@ -1,39 +1,83 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-
 package core;
-/**
- *
- * @author kiro sherif
- */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ValidationResult {
 
     private boolean valid;
     private final List<String> errors;
 
+    // ============================
+    //  MAIN CONSTRUCTOR
+    // ============================
     public ValidationResult(boolean valid, List<String> errors) {
         this.valid = valid;
-        // MAKE THREAD SAFE
         this.errors = Collections.synchronizedList(errors);
     }
 
-    public synchronized void addError(String error) {
-        this.errors.add(error);
+    // ============================
+    //  SHORTCUT CONSTRUCTOR
+    //  (Allows: new ValidationResult(true))
+    // ============================
+    public ValidationResult(boolean valid) {
+        this(valid, new ArrayList<>());
+    }
+
+    // ============================
+    //  ADD ERROR
+    // ============================
+    public synchronized void addError(String err) {
+        this.errors.add(err);
         this.valid = false;
     }
 
     public boolean isValid() {
-        return this.errors.isEmpty();
+        return errors.isEmpty();
     }
 
     public List<String> getErrors() {
-        return this.errors;
+        return errors;
+    }
+
+    // ============================
+    //   GROUPED FORMATTED OUTPUT
+    // ============================
+    public String formatGrouped() {
+
+        if (errors.isEmpty())
+            return "VALID";
+
+        // Group errors by type (ROW / COL / BOX)
+        Map<String, List<String>> groups = errors.stream()
+                .collect(Collectors.groupingBy(err -> err.split(" ")[0]));
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("INVALID\n\n");
+
+        // ROWS
+        if (groups.containsKey("ROW")) {
+            sb.append("ROWS:\n");
+            for (String e : groups.get("ROW"))
+                sb.append(e).append("\n");
+            sb.append("\n");
+        }
+
+        // COLUMNS
+        if (groups.containsKey("COL")) {
+            sb.append("COLUMNS:\n");
+            for (String e : groups.get("COL"))
+                sb.append(e).append("\n");
+            sb.append("\n");
+        }
+
+        // BOXES
+        if (groups.containsKey("BOX")) {
+            sb.append("BOXES:\n");
+            for (String e : groups.get("BOX"))
+                sb.append(e).append("\n");
+        }
+
+        return sb.toString();
     }
 }

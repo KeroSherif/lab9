@@ -16,43 +16,51 @@ import checkers.RowChecker;
 import checkers.ColumnChecker;
 import checkers.BoxChecker;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-
 public class Mode27Validator implements SudokuValidator {
+
+    private static Mode27Validator instance;
+
+    private Mode27Validator() {}
+
+    public static synchronized Mode27Validator getInstance() {
+        if (instance == null)
+            instance = new Mode27Validator();
+        return instance;
+    }
 
     @Override
     public ValidationResult validate(int[][] board) {
 
         System.out.println(">>> Running MODE 27 (27 Threads)");
+        System.out.println(">>> Using STANDARD checkers");
 
-        List<String> errors = new ArrayList<>();
-        ValidationResult result = new ValidationResult(true, errors);
+        ValidationResult result = new ValidationResult(true);
+
         CountDownLatch latch = new CountDownLatch(27);
 
-        // rows
+        // 9 row threads
         for (int i = 0; i < 9; i++) {
-            int row = i;
+            final int r = i;
             new Thread(() -> {
-                new RowChecker(board, row, result).run();
+                new RowChecker(board, r, result).run();
                 latch.countDown();
             }).start();
         }
 
-        // columns
+        // 9 column threads
         for (int j = 0; j < 9; j++) {
-            int col = j;
+            final int c = j;
             new Thread(() -> {
-                new ColumnChecker(board, col, result).run();
+                new ColumnChecker(board, c, result).run();
                 latch.countDown();
             }).start();
         }
 
-        // boxes
+        // 9 box threads
         for (int b = 0; b < 9; b++) {
-            int box = b;
+            final int box = b;
             new Thread(() -> {
                 new BoxChecker(board, box, result).run();
                 latch.countDown();
@@ -64,9 +72,6 @@ public class Mode27Validator implements SudokuValidator {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-
-        if (!errors.isEmpty())
-            return new ValidationResult(false, errors);
 
         return result;
     }

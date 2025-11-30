@@ -7,17 +7,30 @@ import checkers.RowChecker3;
 import checkers.ColumnChecker3;
 import checkers.BoxChecker3;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Mode3Validator implements SudokuValidator {
 
+    
+    //   SINGLETON INSTANCE
+    private static Mode3Validator instance;
+
+    private Mode3Validator() {}   
+
+    public static synchronized Mode3Validator getInstance() {
+        if (instance == null)
+            instance = new Mode3Validator();
+        return instance;
+    }
+
+    
+    //   MAIN VALIDATION LOGIC
+   
     @Override
     public ValidationResult validate(int[][] board) {
 
         System.out.println(">>> Running MODE 3 (3 Threads)");
+        System.out.println(">>> Using MODE-3 checkers");
 
-        ValidationResult result = new ValidationResult(true, new ArrayList<>());
+        ValidationResult result = new ValidationResult(true);
 
         Thread rowThread = new Thread(() -> {
             for (int i = 0; i < 9; i++) {
@@ -42,18 +55,13 @@ public class Mode3Validator implements SudokuValidator {
         colThread.start();
         boxThread.start();
 
-        // Wait for them to finish
+        // Wait for completion
         try {
             rowThread.join();
             colThread.join();
             boxThread.join();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-        }
-
-        // Final decision
-        if (!result.getErrors().isEmpty()) {
-            return new ValidationResult(false, result.getErrors());
         }
 
         return result;
