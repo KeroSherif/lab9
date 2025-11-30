@@ -30,7 +30,20 @@ public class ColumnChecker3 extends Thread {
             seen[num - 1] = true;
         }
     }
-}
+}      
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
