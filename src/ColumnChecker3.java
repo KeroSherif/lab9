@@ -31,6 +31,11 @@ public class ColumnChecker3 extends Thread {
         }
     }
 }      
+   
+
+
+
+
 
 
 
