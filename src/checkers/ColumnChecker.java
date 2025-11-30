@@ -2,8 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+package checkers;
 
-
+import core.ValidationResult;
 /**
  *
  *  @author kiro sherif
@@ -11,36 +12,39 @@
 import java.util.*;
 
 
-public class RowChecker implements Runnable {
+public class ColumnChecker implements Runnable {
     private final int[][] board;
-    private final int rowIndex;
+    private final int colIndex;
     private final ValidationResult result;
 
-    public RowChecker(int[][] board, int rowIndex, ValidationResult result) {
+    public ColumnChecker(int[][] board, int colIndex, ValidationResult result) {
         this.board = board;
-        this.rowIndex = rowIndex;
+        this.colIndex = colIndex;
         this.result = result;
     }
 
     @Override
     public void run() {
-        int[] row = board[rowIndex];
-        List<Integer> duplicates = findDuplicates(row);
+        int[] column = new int[9];
+        for (int row = 0; row < 9; row++) {
+            column[row] = board[row][colIndex];
+        }
+        List<Integer> duplicates = findDuplicates(column);
         for (int digit : duplicates) {
             List<Integer> positions = new ArrayList<>();
-            for (int col = 0; col < 9; col++) {
-                if (row[col] == digit) {
-                    positions.add(col + 1); // 1-based index
+            for (int row = 0; row < 9; row++) {
+                if (board[row][colIndex] == digit) {
+                    positions.add(row + 1); // 1-based
                 }
             }
-            String error = String.format("ROW %d,#%d,[%s]",
-                rowIndex + 1, digit, listToString(positions));
+            String error = String.format("COL %d,#%d,[%s]",
+                colIndex + 1, digit, listToString(positions));
             result.addError(error);
         }
     }
 
     private List<Integer> findDuplicates(int[] arr) {
-        int[] count = new int[10]; // digits 1–9
+        int[] count = new int[10];
         List<Integer> duplicates = new ArrayList<>();
         for (int val : arr) {
             if (val >= 1 && val <= 9) {

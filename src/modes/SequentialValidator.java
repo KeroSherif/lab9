@@ -1,8 +1,22 @@
-import java.util.*;
+package modes;
+
+import core.SudokuValidator;
+import core.ValidationResult;
+
+import checkers.RowChecker;
+import checkers.ColumnChecker;
+import checkers.BoxChecker;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class SequentialValidator implements SudokuValidator {
     @Override
     public ValidationResult validate(int[][] board) {
+
+        System.out.println(">>> Running MODE 0 (Sequential)");
+
         List<String> errors = new ArrayList<>();
 
         // Rows
@@ -54,7 +68,7 @@ public class SequentialValidator implements SudokuValidator {
                 for (int r = 0; r < 3; r++) {
                     for (int c = 0; c < 3; c++) {
                         if (board[startRow + r][startCol + c] == digit) {
-                            positions.add(idx + 1); // 1–9 in box (row-major)
+                            positions.add(idx + 1); // 1–9 inside box
                         }
                         idx++;
                     }

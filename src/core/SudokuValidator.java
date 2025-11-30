@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 
-
+package core;
 /**
  *
  *  @author kiro sherif
@@ -11,4 +11,3 @@
 public interface SudokuValidator {
     ValidationResult validate(int[][] board);
 }
-
