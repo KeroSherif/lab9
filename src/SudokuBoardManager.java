@@ -1,54 +1,85 @@
 import java.io.*;
-import java.util.Random;
+import java.util.*;
 
 public class SudokuBoardManager {
 
-    public static int[][] loadOrCreateBoard(String path) throws Exception {
+    public static int[][] loadOrCreateBoard(String path) {
 
         File file = new File(path);
 
-        if (file.exists()) {
-            return readCsvBoard(path);
+        // 1. If file DOES NOT exist => create new
+        if (!file.exists()) {
+            System.out.println("⚠ File not found. Creating new board: " + path);
+            int[][] board = generateRandomValidBoard();
+            saveSafely(path, board);
+            return board;
         }
 
-        System.out.println("File not found. Creating new random board: " + path);
-
-        int[][] newBoard = generateRandomValidBoard();
-        saveToCsv(path, newBoard);
-        return newBoard;
+        // 2. File exists → Try reading it
+        try {
+            int[][] board = readCsvBoard(path);
+            System.out.println("Loaded board from: " + path);
+            return board;
+        } catch (Exception e) {
+            // 3. File exists but CORRUPTED → create new one
+            System.out.println("⚠ Invalid CSV format. Creating new board: " + path);
+            int[][] fresh = generateRandomValidBoard();
+            saveSafely(path, fresh);
+            return fresh;
+        }
     }
 
+    // --- CSV Reader ---
     public static int[][] readCsvBoard(String path) throws IOException {
         int[][] board = new int[9][9];
 
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
-
             String line;
             int row = 0;
 
-            while ((line = br.readLine()) != null && row < 9) {
+            while ((line = br.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty()) throw new IOException("Empty line detected.");
 
                 String[] parts = line.split(",");
 
-                if (parts.length != 9) {
-                    throw new IOException("Each row must contain 9 values");
-                }
+                if (parts.length != 9)
+                    throw new IOException("Row must have 9 values exactly.");
 
                 for (int col = 0; col < 9; col++) {
-                    board[row][col] = Integer.parseInt(parts[col].trim());
+                    try {
+                        int value = Integer.parseInt(parts[col].trim());
+                        if (value < 0 || value > 9)
+                            throw new IOException("Invalid value " + value);
+
+                        board[row][col] = value;
+
+                    } catch (NumberFormatException nfe) {
+                        throw new IOException("Non-numeric value detected.");
+                    }
                 }
 
                 row++;
             }
 
-            if (row != 9) {
-                throw new IOException("CSV must contain exactly 9 rows");
-            }
+            if (row != 9)
+                throw new IOException("CSV must have 9 rows.");
+
         }
 
         return board;
     }
 
+    // --- Safe Save ---
+    private static void saveSafely(String path, int[][] board) {
+        try {
+            saveToCsv(path, board);
+        } catch (IOException e) {
+            System.out.println("❌ Failed to save new board: " + e.getMessage());
+        }
+    }
+
+    // --- Random Valid Board Generator ---
     private static int[][] generateRandomValidBoard() {
         int[][] base = {
                 {1,2,3,4,5,6,7,8,9},
@@ -65,9 +96,10 @@ public class SudokuBoardManager {
         int[][] board = deepCopy(base);
         Random r = new Random();
 
-        // Shuffle digits
+        // shuffle digits
         int[] map = new int[10];
         boolean[] used = new boolean[10];
+
         for (int d = 1; d <= 9; d++) {
             int newD;
             do newD = r.nextInt(9) + 1;

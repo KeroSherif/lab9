@@ -13,41 +13,77 @@ public class Main {
 
     public static void main(String[] args) {
 
-        if (args == null || args.length < 2) {
-            System.out.println("Usage: java Main <board.csv> <mode>");
-            System.out.println("Mode: 0 (sequential), 3 (3 threads), 27 (27 threads)");
+        // ============================
+        //  ARGUMENT HANDLING
+        // ============================
+
+        // Case 0: No arguments at all
+        if (args == null || args.length == 0) {
+            System.out.println("No arguments provided!");
+            System.out.println("You must provide a CSV file to read.");
+            System.out.println("Example: java Main board.csv 0");
             return;
         }
 
-        String path = args[0];
+        // Case 1: Only file provided (missing mode)
+        if (args.length == 1) {
+            System.out.println(" Missing mode argument!");
+            System.out.println("You provided a file path: " + args[0]);
+            System.out.println("But you must also specify the mode (0, 3, or 27).");
+            return;
+        }
+
+        // Case 2: Not enough arguments
+        if (args.length < 2) {
+            System.out.println(" Not enough arguments!");
+            System.out.println("Usage: java Main <board.csv> <mode>");
+            return;
+        }
+
+        // ============================
+        //  PARSE ARGUMENTS
+        // ============================
+
+        String filePath = args[0];
         int mode;
 
         try {
             mode = Integer.parseInt(args[1]);
+            if (mode != 0 && mode != 3 && mode != 27) {
+                throw new NumberFormatException();
+            }
         } catch (NumberFormatException e) {
-            System.out.println("Mode must be 0, 3, or 27");
+            System.out.println(" Invalid mode value!");
+            System.out.println("Mode must be one of: 0, 3, or 27");
             return;
         }
 
+        // ============================
+        //  LOAD BOARD
+        // ============================
+
         int[][] board;
         try {
-            board = SudokuBoardManager.loadOrCreateBoard(path);
+            board = SudokuBoardManager.loadOrCreateBoard(filePath);
         } catch (Exception e) {
-            System.out.println("Failed to load board: " + e.getMessage());
+            System.out.println(" Failed to load board: " + e.getMessage());
             return;
         }
+
+        // ============================
+        //  SELECT VALIDATION MODE
+        // ============================
 
         SudokuValidator validator = switch (mode) {
             case 0 -> new SequentialValidator();
             case 3 -> new Mode3Validator();
             case 27 -> new Mode27Validator();
-            default -> {
-                System.out.println("Mode must be 0, 3, or 27");
-                yield null;
-            }
+            default -> null; // already validated, unreachable
         };
 
-        if (validator == null) return;
+        // ============================
+        //  RUN VALIDATION
+        // ============================
 
         ValidationResult result = validator.validate(board);
 
@@ -55,8 +91,8 @@ public class Main {
             System.out.println("VALID");
         } else {
             System.out.println("INVALID");
-            for (String e : result.getErrors()) {
-                System.out.println(e);
+            for (String err : result.getErrors()) {
+                System.out.println(err);
             }
         }
     }
