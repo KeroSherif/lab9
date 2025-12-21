@@ -2,9 +2,8 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package lab9;
+
 import java.io.File;
-import javax.xml.catalog.Catalog;
 /**
  *
  * @author DANAH
@@ -19,7 +18,7 @@ public Catalog getCatalog() {
         boolean unfinished = checkIncompleteFolder();
         boolean allModesExist = checkDifficultyFolders();
        
-        return new Catalog(unfinished, allModesExist) {};
+        return new Catalog(unfinished, allModesExist);
 }
 private boolean checkIncompleteFolder() {
         File folder = new File(INCOMPLETE_DIR);
