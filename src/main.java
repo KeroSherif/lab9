@@ -7,6 +7,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import javax.swing.*;
 
 
 public class Main {
@@ -95,5 +96,22 @@ public class Main {
                 System.out.println(err);
             }
         }
+    }
+}
+SwingUtilities.invokeLater(() -> {
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            
+            Viewable realController = new SudokuController();
+            
+            Controllable facade = new ControllerFacade(realController);
+            
+            SudokuGUI gui = new SudokuGUI(facade);
+            
+            System.out.println("Sudoku Game started successfully!");
+        });
     }
 }
