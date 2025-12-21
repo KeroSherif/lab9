@@ -7,20 +7,27 @@
  *
  * @author DANAH
  */
+import java.util.ArrayList;
+
 public class Catalog {
-    private final boolean unfinished;
-    private final boolean allModesExist;
+    private ArrayList<Game> games;
+    private int current;
 
     public Catalog(boolean unfinished, boolean allModesExist) {
-        this.unfinished = unfinished;
-        this.allModesExist = allModesExist;
-    }
-   public boolean hasUnfinished() {
-        return unfinished;
+        games = new ArrayList<>();
+        current = 0;
     }
 
-    public boolean areModesReady() {
-        return allModesExist;
+    public void addGame(Game game) {
+        games.add(game);
+    }
+
+    public Game getCurrentGame() {
+        if (games.isEmpty()) return null;
+        return games.get(current);
+    }
+
+    public void nextGame() {
+        if (!games.isEmpty()) current = (current + 1) % games.size();
     }
 }
-
