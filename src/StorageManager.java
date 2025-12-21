@@ -5,7 +5,9 @@
 package lab9;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  *
@@ -46,4 +48,10 @@ private void saveBoard(int[][] board, String path) throws IOException {
             }
         }
     }
+private void saveLog(String log, String path) throws IOException {
+        try (PrintWriter out = new PrintWriter(new FileWriter(path))) {
+            out.print(log);
+        }
+    }
+}
         
