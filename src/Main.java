@@ -12,7 +12,6 @@ import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
-<<<<<<< HEAD
         Catalog catalog = new Catalog(true, true);
 
         // إضافة ألعاب
@@ -31,20 +30,5 @@ public class Main {
 
         // الحصول على رقم اللعبة الحالية
         System.out.println("Current index: " + catalog.getCurrentIndex());
-=======
-        SwingUtilities.invokeLater(() -> {
-            try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            
-            Viewable realController = new SudokuController();
-            Controllable adapter = new ControllerAdapter(realController);
-            SudokuGUI gui = new SudokuGUI(adapter);
-            
-            System.out.println("Sudoku Game started successfully!");
-        });
->>>>>>> 1fa8a54d1b531bfc413e1fa63c7fd29dc9f22fec
     }
 }
