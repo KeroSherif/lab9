@@ -96,7 +96,7 @@ public class SudokuController implements Viewable {
                 new File(LOG_FILE).delete();
             }
             
-            return new Game(board);
+            return new Game(board, DifficultyEnum.INCOMPLETE);
         } catch (IOException e) {
             throw new NotFoundException("Error loading game: " + e.getMessage());
         }
@@ -125,7 +125,7 @@ public class SudokuController implements Viewable {
     private Game generateGame(Game source, RandomPairs randomPairs, int cellsToRemove) {
         int[][] newBoard = new int[9][9];
         for (int i = 0; i < 9; i++) {
-            newBoard[i] = source.board[i].clone();
+            newBoard[i] = source.getBoard()[i].clone();
         }
         
         List<int[]> positions = randomPairs.generateDistinctPairs(cellsToRemove);
@@ -133,13 +133,13 @@ public class SudokuController implements Viewable {
             newBoard[pos[0]][pos[1]] = 0;
         }
         
-        return new Game(newBoard);
+        return new Game(newBoard, source.getLevel());
     }
     
     private void saveGameToFolder(Game game, String folderPath) {
         try {
             String filename = folderPath + "game_" + System.currentTimeMillis() + ".txt";
-            saveBoardToFile(game.board, filename);
+            saveBoardToFile(game.getBoard(), filename);
         } catch (IOException e) {
             System.err.println("Error saving game: " + e.getMessage());
         }
@@ -152,7 +152,7 @@ public class SudokuController implements Viewable {
         for (int i = 0; i < 9; i++) {
             Set<Integer> seen = new HashSet<>();
             for (int j = 0; j < 9; j++) {
-                int val = game.board[i][j];
+                int val = game.getBoard()[i][j];
                 if (val != 0) {
                     if (!seen.add(val)) {
                         invalidCells.add(i + "," + j);
@@ -164,7 +164,7 @@ public class SudokuController implements Viewable {
         for (int j = 0; j < 9; j++) {
             Set<Integer> seen = new HashSet<>();
             for (int i = 0; i < 9; i++) {
-                int val = game.board[i][j];
+                int val = game.getBoard()[i][j];
                 if (val != 0) {
                     if (!seen.add(val)) {
                         invalidCells.add(i + "," + j);
@@ -180,7 +180,7 @@ public class SudokuController implements Viewable {
                     for (int j = 0; j < 3; j++) {
                         int row = blockRow * 3 + i;
                         int col = blockCol * 3 + j;
-                        int val = game.board[row][col];
+                        int val = game.getBoard()[row][col];
                         if (val != 0) {
                             if (!seen.add(val)) {
                                 invalidCells.add(row + "," + col);
@@ -194,7 +194,7 @@ public class SudokuController implements Viewable {
         boolean isComplete = true;
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
-                if (game.board[i][j] == 0) {
+                if (game.getBoard()[i][j] == 0) {
                     isComplete = false;
                     break;
                 }

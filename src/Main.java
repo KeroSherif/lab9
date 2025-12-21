@@ -20,8 +20,8 @@ public class Main {
             }
             
             Viewable realController = new SudokuController();
-            Controllable facade = new ControllerFacade(realController);
-            SudokuGUI gui = new SudokuGUI(facade);
+            Controllable adapter = new ControllerAdapter(realController);
+            SudokuGUI gui = new SudokuGUI(adapter);
             
             System.out.println("Sudoku Game started successfully!");
         });
