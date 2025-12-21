@@ -1,4 +1,3 @@
-
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
@@ -45,16 +44,11 @@ public class SudokuController implements Controllable {
     @Override
     public int[][] getGame(char level) throws NotFoundException {
         String dir = switch (level) {
-            case 'e' ->
-                EASY_DIR;
-            case 'm' ->
-                MEDIUM_DIR;
-            case 'h' ->
-                HARD_DIR;
-            case 'c' ->
-                INCOMPLETE_DIR;
-            default ->
-                throw new NotFoundException("Invalid level");
+            case 'e' -> EASY_DIR;
+            case 'm' -> MEDIUM_DIR;
+            case 'h' -> HARD_DIR;
+            case 'c' -> INCOMPLETE_DIR;
+            default -> throw new NotFoundException("Invalid level");
         };
 
         File[] files = new File(dir).listFiles((d, n) -> n.endsWith(".txt"));
@@ -108,12 +102,11 @@ public class SudokuController implements Controllable {
             Arrays.fill(valid[i], true);
         }
 
-        // rows
+        // Check rows
         for (int i = 0; i < 9; i++) {
             Map<Integer, Integer> counts = new HashMap<>();
             for (int j = 0; j < 9; j++) {
                 int v = board[i][j];
-
                 if (v != 0) {
                     counts.put(v, counts.getOrDefault(v, 0) + 1);
                 }
@@ -126,7 +119,7 @@ public class SudokuController implements Controllable {
             }
         }
 
-        // columns
+        // Check columns
         for (int j = 0; j < 9; j++) {
             Map<Integer, Integer> counts = new HashMap<>();
             for (int i = 0; i < 9; i++) {
@@ -143,7 +136,7 @@ public class SudokuController implements Controllable {
             }
         }
 
-        // 3x3 boxes
+        // Check 3x3 boxes
         for (int boxRow = 0; boxRow < 3; boxRow++) {
             for (int boxCol = 0; boxCol < 3; boxCol++) {
                 Map<Integer, Integer> counts = new HashMap<>();
@@ -166,54 +159,46 @@ public class SudokuController implements Controllable {
             }
         }
 
-        // columns
-        for (int j = 0; j < 9; j++) {
-            Set<Integer> s = new HashSet<>();
-            for (int i = 0; i < 9; i++) {
-                int v = board[i][j];
-                if (v != 0 && !s.add(v)) {
-                    valid[i][j] = false;
-                }
-            }
-        }
-
-        // blocks
-        for (int br = 0; br < 3; br++) {
-            for (int bc = 0; bc < 3; bc++) {
-                Set<Integer> s = new HashSet<>();
-                for (int i = 0; i < 3; i++) {
-                    for (int j = 0; j < 3; j++) {
-                        int r = br * 3 + i;
-                        int c = bc * 3 + j;
-                        int v = board[r][c];
-                        if (v != 0 && !s.add(v)) {
-                            valid[r][c] = false;
-                        }
-                    }
-                }
-            }
-        }
-
         return valid;
     }
 
     // ================= SOLVE =================
     @Override
-
     public int[][] solveGame(int[][] game) throws InvalidGameException {
+        int emptyCount = countEmptyCells(game);
+        
+        // Check if exactly 5 empty cells
+        if (emptyCount != 5) {
+            throw new InvalidGameException(
+                "Solver only works with exactly 5 empty cells. Current: " + emptyCount
+            );
+        }
 
         int[][] copy = new int[9][9];
         for (int i = 0; i < 9; i++) {
             System.arraycopy(game[i], 0, copy[i], 0, 9);
         }
 
-        int[] result = SudokuSolver.solve(copy);
+        // Use MultiThreadedSudokuSolver (permutation-based)
+        int[] result = MultiThreadedSudokuSolver.solve(copy);
 
         if (result == null) {
             throw new InvalidGameException("No solution exists");
         }
 
         return copy;
+    }
+
+    private int countEmptyCells(int[][] board) {
+        int count = 0;
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                if (board[i][j] == 0) {
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 
     // ================= LOG =================
@@ -235,6 +220,7 @@ public class SudokuController implements Controllable {
         saveBoardToFile(board, INCOMPLETE_DIR + "current.txt");
     }
 
+    @Override
     public void clearIncompleteGame() {
         File dir = new File(INCOMPLETE_DIR);
         if (dir.exists()) {
@@ -250,7 +236,11 @@ public class SudokuController implements Controllable {
         try (Scanner sc = new Scanner(file)) {
             for (int i = 0; i < 9; i++) {
                 for (int j = 0; j < 9; j++) {
-                    board[i][j] = sc.nextInt();
+                    if (sc.hasNextInt()) {
+                        board[i][j] = sc.nextInt();
+                    } else {
+                        throw new IOException("Invalid board format");
+                    }
                 }
             }
         }
@@ -270,7 +260,6 @@ public class SudokuController implements Controllable {
 
     @Override
     public int[][] getRandomGame(char level) throws Exception {
-
         String dir;
         DifficultyEnum difficulty;
         switch (level) {
@@ -298,7 +287,6 @@ public class SudokuController implements Controllable {
         }
 
         File chosen = files[new Random().nextInt(files.length)];
-
         int[][] board = readBoardFromFile(chosen);
         
         // Track for deletion when completed
@@ -310,9 +298,9 @@ public class SudokuController implements Controllable {
 
         return board;
     }
-  // ================= LOAD =================
-    public int[][] loadSelectedGame(File file) throws Exception {
 
+    // ================= LOAD SELECTED =================
+    public int[][] loadSelectedGame(File file) throws Exception {
         int[][] board = readBoardFromFile(file);
         
         // Try to determine difficulty from file path
@@ -330,7 +318,6 @@ public class SudokuController implements Controllable {
 
         clearIncompleteGame();
         saveBoardToFile(board, INCOMPLETE_DIR + "current.txt");
-
         return board;
     }
     
