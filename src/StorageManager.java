@@ -1,11 +1,8 @@
-
-import java.io.File;
-
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-
+package lab9;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -55,6 +52,10 @@ private void saveLog(String log, String path) throws IOException {
         try (PrintWriter out = new PrintWriter(new FileWriter(path))) {
             out.print(log);
         }
+    }
+
+    void saveDifficultyFile(int[][] puzzle, DifficultyEnum diff) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }
         
