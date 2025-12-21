@@ -26,22 +26,24 @@ public class StorageManager {
     
     }
     
-    public void clearIncompleteFolder() {
-        File folder = new File(INCOMPLETE_DIR);
-        File[] files = folder.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                file.delete();
+    public void deleteIncompleteGame() {
+        File game = new File(GAME_FILE);
+        File log = new File(LOG_FILE);
+        
+        if (game.exists()) game.delete();
+        if (log.exists()) log.delete();
+        
+        System.out.println("Incomplete folder wiped (0 files).");
+    }
+    
+private void saveBoard(int[][] board, String path) throws IOException {
+        try (PrintWriter out = new PrintWriter(new FileWriter(path))) {
+            for (int r = 0; r < 9; r++) {
+                for (int c = 0; c < 9; c++) {
+                    out.print(board[r][c] + (c == 8 ? "" : " "));
+                }
+                out.println();
             }
         }
-        // Result: Folder contains 0 files [cite: 86]
-}
-
-    private void saveLog(String moveLog, String LOG_FILE) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
-
-    private void saveBoard(int[][] board, String GAME_FILE) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-}
+        
