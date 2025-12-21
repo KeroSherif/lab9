@@ -19,7 +19,7 @@ public Catalog getCatalog() {
         boolean unfinished = checkIncompleteFolder();
         boolean allModesExist = checkDifficultyFolders();
        
-        return new Catalog(unfinished, allModesExist) {};
+        return new Catalog(unfinished, allModesExist);
 }
 private boolean checkIncompleteFolder() {
         File folder = new File(INCOMPLETE_DIR);
