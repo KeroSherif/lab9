@@ -205,20 +205,29 @@ public class SudokuGUI extends JFrame {
             
             cell.addKeyListener(new KeyAdapter() {
                 @Override
+                public void keyPressed(KeyEvent e) {
+                    // Block backspace and delete keys
+                    if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE || e.getKeyCode() == KeyEvent.VK_DELETE) {
+                        e.consume();
+                    }
+                }
+                
+                @Override
                 public void keyTyped(KeyEvent e) {
                     char ch = e.getKeyChar();
                     
-                    if (!Character.isDigit(ch) && ch != KeyEvent.VK_BACK_SPACE && ch != KeyEvent.VK_DELETE) {
+                    // Only allow digits 1-9
+                    if (!Character.isDigit(ch)) {
                         e.consume();
                         return;
                     }
                     
-                    if (Character.isDigit(ch) && (ch < '1' || ch > '9')) {
+                    if (ch < '1' || ch > '9') {
                         e.consume();
                         return;
                     }
                     
-                    if (cell.getText().length() >= 1 && ch != KeyEvent.VK_BACK_SPACE) {
+                    if (cell.getText().length() >= 1) {
                         e.consume();
                     }
                 }
@@ -237,13 +246,16 @@ public class SudokuGUI extends JFrame {
         int prevValue = currentBoard[row][col];
         int newValue = text.isEmpty() ? 0 : Integer.parseInt(text);
         
-        currentBoard[row][col] = newValue;
-        
-        try {
-            UserAction action = new UserAction(row, col, newValue, prevValue);
-            controller.logUserAction(action);
-        } catch (IOException e) {
-            showError("Error logging action: " + e.getMessage());
+        // Only log if value actually changed
+        if (prevValue != newValue) {
+            currentBoard[row][col] = newValue;
+            
+            try {
+                UserAction action = new UserAction(row, col, newValue, prevValue);
+                controller.logUserAction(action);
+            } catch (IOException e) {
+                showError("Error logging action: " + e.getMessage());
+            }
         }
         
         updateSolveButtonState();
@@ -284,7 +296,7 @@ public class SudokuGUI extends JFrame {
             for (int i = 0; i < 9; i++) {
                 for (int j = 0; j < 9; j++) {
                     if (!fixedCells[i][j]) {
-                        if (currentBoard[i][j] != 0 && !result[i][j]) {
+                        if (!result[i][j]) {
                             cells[i][j].setBackground(new Color(255, 200, 200));
                             hasError = true;
                         } else {
