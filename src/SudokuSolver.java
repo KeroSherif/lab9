@@ -10,13 +10,21 @@
 public class SudokuSolver {
 
     public static int[] solve(int[][] board) {
+        // Make a deep copy to avoid modifying the original
+        int[][] boardCopy = new int[9][9];
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                boardCopy[i][j] = board[i][j];
+            }
+        }
+
         // Find all empty cells
         int[][] empty = new int[81][2];
         int emptyCount = 0;
 
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
-                if (board[i][j] == 0) {
+                if (boardCopy[i][j] == 0) {
                     empty[emptyCount][0] = i;
                     empty[emptyCount][1] = j;
                     emptyCount++;
@@ -24,28 +32,21 @@ public class SudokuSolver {
             }
         }
 
-        // If exactly 5 empty cells, use the optimized permutation-based solver
-        if (emptyCount == 5) {
-            // Create a properly-sized array for FlyweightVerifier
-            int[][] emptyForVerifier = new int[5][2];
-            for (int i = 0; i < 5; i++) {
-                emptyForVerifier[i][0] = empty[i][0];
-                emptyForVerifier[i][1] = empty[i][1];
+        // Validate empty cells
+        for (int i = 0; i < emptyCount; i++) {
+            if (empty[i][0] < 0 || empty[i][0] >= 9 || empty[i][1] < 0 || empty[i][1] >= 9) {
+                throw new IllegalStateException("Invalid empty cell coordinates");
             }
-            
-            PermutationIterator it = new PermutationIterator(5);
-            FlyweightVerifier verifier = new FlyweightVerifier(board, emptyForVerifier);
-
-            while (it.hasNext()) {
-                int[] candidate = it.next();
-                if (verifier.isValid(candidate))
-                    return candidate;
-            }
-            return null;
         }
 
-        // For other numbers of empty cells, use backtracking
-        if (solveBacktrack(board, empty, 0, emptyCount)) {
+        // Use backtracking for all cases
+        if (solveBacktrack(boardCopy, empty, 0, emptyCount)) {
+            // Copy solved board back to original
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 9; j++) {
+                    board[i][j] = boardCopy[i][j];
+                }
+            }
             int[] solution = new int[emptyCount];
             for (int i = 0; i < emptyCount; i++) {
                 solution[i] = board[empty[i][0]][empty[i][1]];
@@ -60,8 +61,16 @@ public class SudokuSolver {
             return true;
         }
 
+        if (idx >= empty.length || idx < 0) {
+            throw new IllegalStateException("Index out of bounds: idx=" + idx + ", length=" + emptyCount);
+        }
+
         int row = empty[idx][0];
         int col = empty[idx][1];
+
+        if (row < 0 || row >= 9 || col < 0 || col >= 9) {
+            throw new IllegalStateException("Invalid cell coordinates: row=" + row + ", col=" + col);
+        }
 
         for (int num = 1; num <= 9; num++) {
             if (isValid(board, row, col, num)) {

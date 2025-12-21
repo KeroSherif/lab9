@@ -310,14 +310,25 @@ public class SudokuGUI extends JFrame {
         try {
             int[][] solution = controller.solveGame(currentBoard);
             
-            for (int i = 0; i < solution.length; i++) {
-                int x = solution[i][0];
-                int y = solution[i][1];
-                int value = solution[i][2];
-                
-                cells[x][y].setText(String.valueOf(value));
-                cells[x][y].setBackground(new Color(200, 255, 200));
-                currentBoard[x][y] = value;
+            // Copy the solved board back to currentBoard
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 9; j++) {
+                    currentBoard[i][j] = solution[i][j];
+                }
+            }
+            
+            // Refresh the display and highlight solved cells
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 9; j++) {
+                    int value = currentBoard[i][j];
+                    String displayText = value == 0 ? "" : String.valueOf(value);
+                    cells[i][j].setText(displayText);
+                    
+                    // Highlight cells that were solved (not originally fixed)
+                    if (!fixedCells[i][j]) {
+                        cells[i][j].setBackground(new Color(200, 255, 200));
+                    }
+                }
             }
             
             statusLabel.setText("Puzzle solved automatically!");
