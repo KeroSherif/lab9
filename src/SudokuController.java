@@ -1,42 +1,30 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-
-/**
- *
- * @author monic
- */
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
-
-
 public class SudokuController implements Viewable {
 
-    private final Path baseDir;
-    private final Path easyDir;
-    private final Path mediumDir;
-    private final Path hardDir;
-    private final Path incompleteDir;
-    private final Path logFile;
+    private static final String GAMES_DIR = "games/";
+    private static final String EASY_DIR = GAMES_DIR + "easy/";
+    private static final String MEDIUM_DIR = GAMES_DIR + "medium/";
+    private static final String HARD_DIR = GAMES_DIR + "hard/";
+    private static final String INCOMPLETE_DIR = GAMES_DIR + "incomplete/";
+    private static final String LOG_FILE = INCOMPLETE_DIR + "moves.log";
 
     public SudokuController() {
-        baseDir = Paths.get("games");
-        easyDir = baseDir.resolve("easy");
-        mediumDir = baseDir.resolve("medium");
-        hardDir = baseDir.resolve("hard");
-        incompleteDir = baseDir.resolve("incomplete");
-        logFile = incompleteDir.resolve("moves.log");
+        createDirectories();
+    }
 
+    // ===================== Directories =====================
+
+    private void createDirectories() {
         try {
-            Files.createDirectories(easyDir);
-            Files.createDirectories(mediumDir);
-            Files.createDirectories(hardDir);
-            Files.createDirectories(incompleteDir);
+            Files.createDirectories(Paths.get(EASY_DIR));
+            Files.createDirectories(Paths.get(MEDIUM_DIR));
+            Files.createDirectories(Paths.get(HARD_DIR));
+            Files.createDirectories(Paths.get(INCOMPLETE_DIR));
         } catch (IOException e) {
-            throw new RuntimeException("Failed to create game directories");
+            throw new RuntimeException("Error creating directories");
         }
     }
 
@@ -44,50 +32,55 @@ public class SudokuController implements Viewable {
 
     @Override
     public Catalog getCatalog() {
-        Catalog c = new Catalog();
-        c.setUnfinished(hasGame(incompleteDir));
-        c.setAllModesExist(
-                hasGame(easyDir) &&
-                hasGame(mediumDir) &&
-                hasGame(hardDir)
-        );
-        return c;
+        boolean hasIncomplete = hasGameInFolder(INCOMPLETE_DIR);
+        boolean hasAllLevels =
+                hasGameInFolder(EASY_DIR) &&
+                hasGameInFolder(MEDIUM_DIR) &&
+                hasGameInFolder(HARD_DIR);
+
+        return new Catalog(hasIncomplete, hasAllLevels);
     }
 
-    private boolean hasGame(Path dir) {
-        try (DirectoryStream<Path> ds = Files.newDirectoryStream(dir, "*.txt")) {
-            return ds.iterator().hasNext();
-        } catch (IOException e) {
-            return false;
-        }
+    private boolean hasGameInFolder(String folderPath) {
+        File dir = new File(folderPath);
+        File[] files = dir.listFiles(
+                (d, name) -> name.endsWith(".txt") && !name.equals("moves.log")
+        );
+        return files != null && files.length > 0;
     }
 
     // ===================== Load Game =====================
 
     @Override
     public Game getGame(DifficultyEnum level) throws NotFoundException {
-        Path dir;
+
+        String folderPath;
 
         switch (level) {
-            case EASY -> dir = easyDir;
-            case MEDIUM -> dir = mediumDir;
-            case HARD -> dir = hardDir;
-            case INCOMPLETE -> dir = incompleteDir;
+            case EASY -> folderPath = EASY_DIR;
+            case MEDIUM -> folderPath = MEDIUM_DIR;
+            case HARD -> folderPath = HARD_DIR;
+            case INCOMPLETE -> folderPath = INCOMPLETE_DIR;
             default -> throw new NotFoundException("Invalid difficulty");
         }
 
-        List<Path> games = listGames(dir);
-        if (games.isEmpty()) {
+        File dir = new File(folderPath);
+        File[] files = dir.listFiles(
+                (d, name) -> name.endsWith(".txt") && !name.equals("moves.log")
+        );
+
+        if (files == null || files.length == 0) {
             throw new NotFoundException("No game found");
         }
 
-        Path selected = games.get(new Random().nextInt(games.size()));
+        File selected = files[new Random().nextInt(files.length)];
 
         try {
-            int[][] board = readBoard(selected);
+            int[][] board = loadBoardFromFile(selected);
 
             if (level != DifficultyEnum.INCOMPLETE) {
-                saveCurrent(board);
+                saveBoardToFile(board, INCOMPLETE_DIR + "current.txt");
+                new File(LOG_FILE).delete();
             }
 
             return new Game(board, level);
@@ -97,19 +90,44 @@ public class SudokuController implements Viewable {
         }
     }
 
-    private List<Path> listGames(Path dir) throws NotFoundException {
-        try (DirectoryStream<Path> ds = Files.newDirectoryStream(dir, "*.txt")) {
-            List<Path> list = new ArrayList<>();
-            for (Path p : ds) list.add(p);
-            return list;
-        } catch (IOException e) {
-            throw new NotFoundException("Cannot read folder");
+    // ===================== Drive Games =====================
+
+    @Override
+    public void driveGames(Game sourceGame) throws SolutionInvalidException {
+
+        String result = verifyGame(sourceGame);
+        if (!result.equals("valid")) {
+            throw new SolutionInvalidException(result);
         }
+
+        RandomPairs rp = new RandomPairs();
+
+        saveGameToFolder(generateGame(sourceGame, rp, 10), EASY_DIR);
+        saveGameToFolder(generateGame(sourceGame, rp, 20), MEDIUM_DIR);
+        saveGameToFolder(generateGame(sourceGame, rp, 25), HARD_DIR);
     }
 
-    private void saveCurrent(int[][] board) throws IOException {
-        Files.deleteIfExists(logFile);
-        writeBoard(incompleteDir.resolve("current.txt"), board);
+    private Game generateGame(Game source, RandomPairs rp, int remove) {
+
+        int[][] newBoard = new int[9][9];
+        for (int i = 0; i < 9; i++) {
+            newBoard[i] = source.getBoard()[i].clone();
+        }
+
+        for (int[] pos : rp.generateDistinctPairs(remove)) {
+            newBoard[pos[0]][pos[1]] = 0;
+        }
+
+        return new Game(newBoard, source.getLevel());
+    }
+
+    private void saveGameToFolder(Game game, String folderPath) {
+        try {
+            String filename = folderPath + "game_" + System.currentTimeMillis() + ".txt";
+            saveBoardToFile(game.getBoard(), filename);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to save game");
+        }
     }
 
     // ===================== Verification =====================
@@ -160,9 +178,14 @@ public class SudokuController implements Viewable {
         }
 
         boolean complete = true;
-        for (int[] row : board)
-            for (int v : row)
-                if (v == 0) complete = false;
+        for (int[] row : board) {
+            for (int v : row) {
+                if (v == 0) {
+                    complete = false;
+                    break;
+                }
+            }
+        }
 
         if (!invalid.isEmpty())
             return "invalid " + String.join(" ", invalid);
@@ -181,43 +204,36 @@ public class SudokuController implements Viewable {
 
     @Override
     public void logUserAction(String userAction) throws IOException {
-        Files.writeString(
-                logFile,
-                userAction + System.lineSeparator(),
-                StandardOpenOption.CREATE,
-                StandardOpenOption.APPEND
-        );
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(LOG_FILE, true))) {
+            bw.write(userAction);
+            bw.newLine();
+        }
     }
 
     // ===================== Helpers =====================
 
-    private int[][] readBoard(Path p) throws IOException {
-        int[][] b = new int[9][9];
-        List<String> lines = Files.readAllLines(p);
+    private int[][] loadBoardFromFile(File file) throws IOException {
+        int[][] board = new int[9][9];
 
-        for (int i = 0; i < 9; i++) {
-            String[] v = lines.get(i).trim().split("\\s+");
-            for (int j = 0; j < 9; j++) {
-                b[i][j] = Integer.parseInt(v[j]);
-            }
-        }
-        return b;
-    }
-
-    private void writeBoard(Path p, int[][] b) throws IOException {
-        try (BufferedWriter w = Files.newBufferedWriter(p)) {
-            for (int[] row : b) {
-                for (int v : row) {
-                    w.write(v + " ");
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            for (int i = 0; i < 9; i++) {
+                String[] vals = br.readLine().trim().split("\\s+");
+                for (int j = 0; j < 9; j++) {
+                    board[i][j] = Integer.parseInt(vals[j]);
                 }
-                w.newLine();
             }
         }
+        return board;
     }
 
-    @Override
-    public void driveGames(Game sourceGame) throws SolutionInvalidException {
-        throw new UnsupportedOperationException("Not supported yet."); 
+    private void saveBoardToFile(int[][] board, String filename) throws IOException {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(filename))) {
+            for (int[] row : board) {
+                for (int v : row) {
+                    bw.write(v + " ");
+                }
+                bw.newLine();
+            }
+        }
     }
 }
-
