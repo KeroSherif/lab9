@@ -9,22 +9,19 @@
  */
 public class SudokuSolver {
 
+    /**
+     * Solves a Sudoku board using permutations (Iterator pattern).
+     * As per Lab 10 requirements: ONLY works when exactly 5 cells are empty.
+     * Uses PermutationIterator and FlyweightVerifier (no backtracking allowed).
+     */
     public static int[] solve(int[][] board) {
-        // Make a deep copy to avoid modifying the original
-        int[][] boardCopy = new int[9][9];
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-                boardCopy[i][j] = board[i][j];
-            }
-        }
-
         // Find all empty cells
         int[][] empty = new int[81][2];
         int emptyCount = 0;
 
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
-                if (boardCopy[i][j] == 0) {
+                if (board[i][j] == 0) {
                     empty[emptyCount][0] = i;
                     empty[emptyCount][1] = j;
                     emptyCount++;
@@ -32,59 +29,40 @@ public class SudokuSolver {
             }
         }
 
-        // Validate empty cells
+        // Lab 10 requirement: solver bounded to exactly 5 empty cells
+        if (emptyCount != 5) {
+            throw new IllegalStateException(
+                    "Solver only works with exactly 5 empty cells. Found: " + emptyCount);
+        }
+
+        // Trim empty array to actual size
+        int[][] emptyCells = new int[emptyCount][2];
         for (int i = 0; i < emptyCount; i++) {
-            if (empty[i][0] < 0 || empty[i][0] >= 9 || empty[i][1] < 0 || empty[i][1] >= 9) {
-                throw new IllegalStateException("Invalid empty cell coordinates");
+            emptyCells[i][0] = empty[i][0];
+            emptyCells[i][1] = empty[i][1];
+        }
+
+        // Use PermutationIterator (Iterator pattern) and FlyweightVerifier (Flyweight pattern)
+        PermutationIterator iterator = new PermutationIterator(emptyCount);
+        FlyweightVerifier verifier = new FlyweightVerifier(board, emptyCells);
+
+        // Try all permutations (9^5 = ~60,000 possibilities)
+        while (iterator.hasNext()) {
+            int[] candidate = iterator.next();
+            
+            if (verifier.isValid(candidate)) {
+                // Found valid solution - fill board and return
+                for (int i = 0; i < emptyCount; i++) {
+                    board[emptyCells[i][0]][emptyCells[i][1]] = candidate[i];
+                }
+                return candidate;
             }
         }
 
-        // Use backtracking for all cases
-        if (solveBacktrack(boardCopy, empty, 0, emptyCount)) {
-            // Copy solved board back to original
-            for (int i = 0; i < 9; i++) {
-                for (int j = 0; j < 9; j++) {
-                    board[i][j] = boardCopy[i][j];
-                }
-            }
-            int[] solution = new int[emptyCount];
-            for (int i = 0; i < emptyCount; i++) {
-                solution[i] = board[empty[i][0]][empty[i][1]];
-            }
-            return solution;
-        }
-        return null;
+        return null; // No solution found
     }
 
-    private static boolean solveBacktrack(int[][] board, int[][] empty, int idx, int emptyCount) {
-        if (idx == emptyCount) {
-            return true;
-        }
-
-        if (idx >= empty.length || idx < 0) {
-            throw new IllegalStateException("Index out of bounds: idx=" + idx + ", length=" + emptyCount);
-        }
-
-        int row = empty[idx][0];
-        int col = empty[idx][1];
-
-        if (row < 0 || row >= 9 || col < 0 || col >= 9) {
-            throw new IllegalStateException("Invalid cell coordinates: row=" + row + ", col=" + col);
-        }
-
-        for (int num = 1; num <= 9; num++) {
-            if (isValid(board, row, col, num)) {
-                board[row][col] = num;
-                if (solveBacktrack(board, empty, idx + 1, emptyCount)) {
-                    return true;
-                }
-                board[row][col] = 0;
-            }
-        }
-
-        return false;
-    }
-
+    // Keep isValid for compatibility, but it's not used in the new permutation-based solver
     private static boolean isValid(int[][] board, int row, int col, int num) {
         // Check row
         for (int i = 0; i < 9; i++) {

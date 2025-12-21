@@ -16,9 +16,9 @@ import java.io.PrintWriter;
 
 public class StorageManager {
 
-    private final String INCOMPLETE_DIR = "incomplete/";
-    private final String GAME_FILE = "incomplete/game.txt";
-    private final String LOG_FILE = "incomplete/log.txt";
+    private final String INCOMPLETE_DIR = "games/incomplete/";
+    private final String GAME_FILE = "games/incomplete/game.txt";
+    private final String LOG_FILE = "games/incomplete/log.txt";
 
     public void saveIncompleteGame(int[][] board, String moveLog)
             throws IOException {

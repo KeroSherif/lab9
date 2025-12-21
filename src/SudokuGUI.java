@@ -519,7 +519,8 @@ public class SudokuGUI extends JFrame {
 
     private void updateSolveButtonState() {
         int emptyCount = countEmptyCells();
-        solveButton.setEnabled(emptyCount <= 5 && emptyCount > 0);
+        // Lab 10 requirement: Solve button only enabled when EXACTLY 5 empty cells
+        solveButton.setEnabled(emptyCount == 5);
 
     }
 
@@ -557,12 +558,30 @@ public class SudokuGUI extends JFrame {
             }
 
             if (isValid) {
+                // Delete completed game as per Lab 10 requirements
+                controller.deleteCompletedGame();
+                
                 JOptionPane.showMessageDialog(
                         this,
-                        "Congratulations! Puzzle solved correctly!",
+                        "Congratulations! Puzzle solved correctly!\nThe game has been removed.",
                         "Success",
                         JOptionPane.INFORMATION_MESSAGE
                 );
+                
+                // Ask if user wants to play another game
+                int choice = JOptionPane.showConfirmDialog(
+                        this,
+                        "Would you like to play another game?",
+                        "Play Again",
+                        JOptionPane.YES_NO_OPTION
+                );
+                
+                if (choice == JOptionPane.YES_OPTION) {
+                    dispose();
+                    new SudokuGUI(controller);
+                } else {
+                    System.exit(0);
+                }
             } else {
                 showError("Board is full but invalid. Please check your entries.");
             }

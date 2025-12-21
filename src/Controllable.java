@@ -21,5 +21,8 @@ public interface Controllable {
     void clearIncompleteGame();
 
     int[][] loadSelectedGame(File file) throws Exception;
+    
+    // Delete completed game from difficulty folder and clear incomplete folder
+    void deleteCompletedGame();
 
 }

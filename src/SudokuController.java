@@ -11,6 +11,10 @@ public class SudokuController implements Controllable {
     private static final String HARD_DIR = GAMES_DIR + "hard/";
     private static final String INCOMPLETE_DIR = GAMES_DIR + "incomplete/";
     private static final String LOG_FILE = INCOMPLETE_DIR + "moves.log";
+    
+    // Track current game difficulty for deletion when completed
+    private DifficultyEnum currentGameDifficulty = null;
+    private String currentGameFile = null;
 
     public SudokuController() {
         try {
@@ -59,7 +63,24 @@ public class SudokuController implements Controllable {
         }
 
         try {
-            int[][] board = readBoardFromFile(files[new Random().nextInt(files.length)]);
+            File selectedFile = files[new Random().nextInt(files.length)];
+            int[][] board = readBoardFromFile(selectedFile);
+            
+            // Track difficulty and file for later deletion if completed
+            if (level == 'e') {
+                currentGameDifficulty = DifficultyEnum.EASY;
+                currentGameFile = selectedFile.getName();
+            } else if (level == 'm') {
+                currentGameDifficulty = DifficultyEnum.MEDIUM;
+                currentGameFile = selectedFile.getName();
+            } else if (level == 'h') {
+                currentGameDifficulty = DifficultyEnum.HARD;
+                currentGameFile = selectedFile.getName();
+            } else {
+                currentGameDifficulty = null;
+                currentGameFile = null;
+            }
+            
             if (level != 'c') {
                 saveIncompleteGame(board);
             }
@@ -251,15 +272,19 @@ public class SudokuController implements Controllable {
     public int[][] getRandomGame(char level) throws Exception {
 
         String dir;
+        DifficultyEnum difficulty;
         switch (level) {
             case 'e':
                 dir = EASY_DIR;
+                difficulty = DifficultyEnum.EASY;
                 break;
             case 'm':
                 dir = MEDIUM_DIR;
+                difficulty = DifficultyEnum.MEDIUM;
                 break;
             case 'h':
                 dir = HARD_DIR;
+                difficulty = DifficultyEnum.HARD;
                 break;
             default:
                 throw new Exception("Invalid level");
@@ -275,6 +300,10 @@ public class SudokuController implements Controllable {
         File chosen = files[new Random().nextInt(files.length)];
 
         int[][] board = readBoardFromFile(chosen);
+        
+        // Track for deletion when completed
+        currentGameDifficulty = difficulty;
+        currentGameFile = chosen.getName();
 
         clearIncompleteGame();
         saveBoardToFile(board, INCOMPLETE_DIR + "current.txt");
@@ -285,12 +314,53 @@ public class SudokuController implements Controllable {
     public int[][] loadSelectedGame(File file) throws Exception {
 
         int[][] board = readBoardFromFile(file);
-
         
+        // Try to determine difficulty from file path
+        String path = file.getAbsolutePath();
+        if (path.contains("easy")) {
+            currentGameDifficulty = DifficultyEnum.EASY;
+        } else if (path.contains("medium")) {
+            currentGameDifficulty = DifficultyEnum.MEDIUM;
+        } else if (path.contains("hard")) {
+            currentGameDifficulty = DifficultyEnum.HARD;
+        } else {
+            currentGameDifficulty = null;
+        }
+        currentGameFile = file.getName();
+
         clearIncompleteGame();
         saveBoardToFile(board, INCOMPLETE_DIR + "current.txt");
 
         return board;
+    }
+    
+    // ================= DELETE COMPLETED GAME =================
+    /**
+     * Deletes the current game from its difficulty folder and clears incomplete folder.
+     * Called when user completes the puzzle successfully.
+     */
+    public void deleteCompletedGame() {
+        if (currentGameDifficulty != null && currentGameFile != null) {
+            String dir = switch (currentGameDifficulty) {
+                case EASY -> EASY_DIR;
+                case MEDIUM -> MEDIUM_DIR;
+                case HARD -> HARD_DIR;
+                case INCOMPLETE -> INCOMPLETE_DIR; // Should not happen, but handle for completeness
+            };
+            
+            File gameFile = new File(dir + currentGameFile);
+            if (gameFile.exists()) {
+                gameFile.delete();
+                System.out.println("Deleted completed game: " + gameFile.getPath());
+            }
+        }
+        
+        // Clear incomplete folder (both game and log files)
+        clearIncompleteGame();
+        
+        // Reset tracking
+        currentGameDifficulty = null;
+        currentGameFile = null;
     }
 
 }

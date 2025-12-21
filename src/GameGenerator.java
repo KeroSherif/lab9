@@ -35,27 +35,26 @@ public class GameGenerator {
         }
 
         
-        Random random = new Random(System.currentTimeMillis());
+        // Use RandomPairs class as required by Lab 10 specifications
+        RandomPairs randomPairs = new RandomPairs();
 
-        saveLevel(solvedBoard, 10, DifficultyEnum.EASY, random);
-        saveLevel(solvedBoard, 20, DifficultyEnum.MEDIUM, random);
-        saveLevel(solvedBoard, 25, DifficultyEnum.HARD, random);
+        saveLevel(solvedBoard, 10, DifficultyEnum.EASY, randomPairs);
+        saveLevel(solvedBoard, 20, DifficultyEnum.MEDIUM, randomPairs);
+        saveLevel(solvedBoard, 25, DifficultyEnum.HARD, randomPairs);
     }
 
     private void saveLevel(int[][] solved, int cellsToRemove,
-            DifficultyEnum diff, Random rand) {
+            DifficultyEnum diff, RandomPairs randomPairs) {
 
         int[][] puzzle = copyBoard(solved);
-        int removed = 0;
-
-        while (removed < cellsToRemove) {
-            int r = rand.nextInt(9);
-            int c = rand.nextInt(9);
-
-            if (puzzle[r][c] != 0) {
-                puzzle[r][c] = 0;
-                removed++;
-            }
+        
+        // Generate distinct random pairs using RandomPairs class
+        var pairs = randomPairs.generateDistinctPairs(cellsToRemove);
+        
+        for (int[] pair : pairs) {
+            int r = pair[0];
+            int c = pair[1];
+            puzzle[r][c] = 0;
         }
 
         storage.saveDifficultyFile(puzzle, diff);
