@@ -172,4 +172,14 @@ public class ControllerAdapter implements Controllable {
                 throw new IllegalArgumentException("Invalid difficulty level: " + level);
         }
     }
+
+    @Override
+    public int[][] getRandomGame(char level) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public void clearIncompleteGame() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

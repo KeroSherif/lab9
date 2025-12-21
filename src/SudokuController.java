@@ -1,3 +1,4 @@
+
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
@@ -18,54 +19,61 @@ public class SudokuController implements Controllable {
             Files.createDirectories(Paths.get(HARD_DIR));
             Files.createDirectories(Paths.get(INCOMPLETE_DIR));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to create directories");
         }
     }
 
     // ================= CATALOG =================
     @Override
     public boolean[] getCatalog() {
-        boolean hasIncomplete = hasGame(INCOMPLETE_DIR);
-        boolean hasAll =
-                hasGame(EASY_DIR) &&
-                hasGame(MEDIUM_DIR) &&
-                hasGame(HARD_DIR);
-
-        return new boolean[]{hasIncomplete, hasAll};
+        return new boolean[]{
+            hasGame(INCOMPLETE_DIR),
+            hasGame(EASY_DIR) && hasGame(MEDIUM_DIR) && hasGame(HARD_DIR)
+        };
     }
 
     private boolean hasGame(String dirPath) {
-        File dir = new File(dirPath);
-        File[] files = dir.listFiles((d, n) -> n.endsWith(".txt"));
+        File[] files = new File(dirPath).listFiles((d, n) -> n.endsWith(".txt"));
         return files != null && files.length > 0;
     }
 
     // ================= LOAD GAME =================
     @Override
     public int[][] getGame(char level) throws NotFoundException {
-
-        String dir;
-        switch (level) {
-            case 'e': dir = EASY_DIR; break;
-            case 'm': dir = MEDIUM_DIR; break;
-            case 'h': dir = HARD_DIR; break;
-            case 'c': dir = INCOMPLETE_DIR; break;
-            default: throw new NotFoundException("Invalid level");
-        }
+        String dir = switch (level) {
+            case 'e' ->
+                EASY_DIR;
+            case 'm' ->
+                MEDIUM_DIR;
+            case 'h' ->
+                HARD_DIR;
+            case 'c' ->
+                INCOMPLETE_DIR;
+            default ->
+                throw new NotFoundException("Invalid level");
+        };
 
         File[] files = new File(dir).listFiles((d, n) -> n.endsWith(".txt"));
-        if (files == null || files.length == 0)
+        if (files == null || files.length == 0) {
             throw new NotFoundException("No game found");
+        }
 
-        return loadBoard(files[0]);
+        try {
+            int[][] board = readBoardFromFile(files[new Random().nextInt(files.length)]);
+            if (level != 'c') {
+                saveIncompleteGame(board);
+            }
+            return board;
+        } catch (IOException e) {
+            throw new NotFoundException("Invalid file");
+        }
     }
 
     // ================= GENERATE =================
     @Override
     public void driveGames(String sourcePath) throws SolutionInvalidException {
-        GameGenerator generator = new GameGenerator();
         try {
-            generator.generateLevels(sourcePath);
+            new GameGenerator().generateLevels(sourcePath);
         } catch (GameGenerator.SolutionInvalidException e) {
             throw new SolutionInvalidException(e.getMessage());
         }
@@ -74,40 +82,70 @@ public class SudokuController implements Controllable {
     // ================= VERIFY =================
     @Override
     public boolean[][] verifyGame(int[][] board) {
-
         boolean[][] valid = new boolean[9][9];
-        for (int i = 0; i < 9; i++)
+        for (int i = 0; i < 9; i++) {
             Arrays.fill(valid[i], true);
+        }
 
         // rows
         for (int i = 0; i < 9; i++) {
             Set<Integer> s = new HashSet<>();
             for (int j = 0; j < 9; j++) {
                 int v = board[i][j];
-                if (v != 0 && !s.add(v))
+                if (v != 0 && !s.add(v)) {
                     valid[i][j] = false;
+                }
             }
         }
+
+        // columns
+        for (int j = 0; j < 9; j++) {
+            Set<Integer> s = new HashSet<>();
+            for (int i = 0; i < 9; i++) {
+                int v = board[i][j];
+                if (v != 0 && !s.add(v)) {
+                    valid[i][j] = false;
+                }
+            }
+        }
+
+        // blocks
+        for (int br = 0; br < 3; br++) {
+            for (int bc = 0; bc < 3; bc++) {
+                Set<Integer> s = new HashSet<>();
+                for (int i = 0; i < 3; i++) {
+                    for (int j = 0; j < 3; j++) {
+                        int r = br * 3 + i;
+                        int c = bc * 3 + j;
+                        int v = board[r][c];
+                        if (v != 0 && !s.add(v)) {
+                            valid[r][c] = false;
+                        }
+                    }
+                }
+            }
+        }
+
         return valid;
     }
 
     // ================= SOLVE =================
     @Override
+
     public int[][] solveGame(int[][] game) throws InvalidGameException {
+
         int[][] copy = new int[9][9];
         for (int i = 0; i < 9; i++) {
             System.arraycopy(game[i], 0, copy[i], 0, 9);
         }
-        
-        try {
-            int[] solution = SudokuSolver.solve(copy);
-            if (solution == null) {
-                throw new InvalidGameException("No solution found");
-            }
-            return copy;
-        } catch (Exception e) {
-            throw new InvalidGameException("Solver error: " + e.getMessage());
+
+        int[] result = SudokuSolver.solve(copy);
+
+        if (result == null) {
+            throw new InvalidGameException("No solution exists");
         }
+
+        return copy;
     }
 
     // ================= LOG =================
@@ -120,20 +158,111 @@ public class SudokuController implements Controllable {
     }
 
     public boolean undoLastMove(int[][] board) throws IOException {
-        UndoLogger logger = new UndoLogger(LOG_FILE);
-        return logger.undoLastMove(board);
+        return new UndoLogger(LOG_FILE).undoLastMove(board);
+    }
+
+    // ================= SAVE / LOAD =================
+    public void saveIncompleteGame(int[][] board) throws IOException {
+        clearIncompleteGame();
+        saveBoardToFile(board, INCOMPLETE_DIR + "current.txt");
+    }
+
+    public void clearIncompleteGame() {
+        File dir = new File(INCOMPLETE_DIR);
+        if (dir.exists()) {
+            for (File f : Objects.requireNonNull(dir.listFiles())) {
+                f.delete();
+            }
+        }
     }
 
     // ================= HELPERS =================
-    private int[][] loadBoard(File f) throws NotFoundException {
-        int[][] b = new int[9][9];
-        try (Scanner sc = new Scanner(f)) {
-            for (int i = 0; i < 9; i++)
-                for (int j = 0; j < 9; j++)
-                    b[i][j] = sc.nextInt();
-        } catch (Exception e) {
-            throw new NotFoundException("Invalid file");
+    private int[][] readBoardFromFile(File file) throws IOException {
+        int[][] board = new int[9][9];
+        try (Scanner sc = new Scanner(file)) {
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 9; j++) {
+                    board[i][j] = sc.nextInt();
+                }
+            }
         }
-        return b;
+        return board;
     }
+
+    private void saveBoardToFile(int[][] board, String path) throws IOException {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(path))) {
+            for (int[] row : board) {
+                for (int v : row) {
+                    bw.write(v + " ");
+                }
+                bw.newLine();
+            }
+        }
+    }
+
+    @Override
+    public int[][] getRandomGame(char level) throws Exception {
+
+        String dir;
+        switch (level) {
+            case 'e':
+                dir = EASY_DIR;
+                break;
+            case 'm':
+                dir = MEDIUM_DIR;
+                break;
+            case 'h':
+                dir = HARD_DIR;
+                break;
+            default:
+                throw new Exception("Invalid level");
+        }
+
+        File folder = new File(dir);
+        File[] files = folder.listFiles((d, n) -> n.endsWith(".txt"));
+
+        if (files == null || files.length == 0) {
+            throw new Exception("No games available");
+        }
+
+        File randomFile = files[new Random().nextInt(files.length)];
+        int[][] fullBoard = readBoardFromFile(randomFile);
+
+        int[][] board = new int[9][9];
+        for (int i = 0; i < 9; i++) {
+            System.arraycopy(fullBoard[i], 0, board[i], 0, 9);
+        }
+
+        int removeCount;
+        switch (level) {
+            case 'e':
+                removeCount = 35;
+                break;
+            case 'm':
+                removeCount = 45;
+                break;
+            case 'h':
+                removeCount = 55;
+                break;
+            default:
+                removeCount = 40;
+        }
+
+        Random r = new Random();
+        while (removeCount > 0) {
+            int x = r.nextInt(9);
+            int y = r.nextInt(9);
+
+            if (board[x][y] != 0) {
+                board[x][y] = 0;
+                removeCount--;
+            }
+        }
+
+        clearIncompleteGame();
+        saveBoardToFile(board, INCOMPLETE_DIR + "current.txt");
+
+        return board;
+    }
+
 }
