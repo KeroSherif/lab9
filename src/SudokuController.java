@@ -11,9 +11,6 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
-/**
- * الـ Controller الرئيسي - هنا بتحطي كل المنطق الأساسي
- */
 public class SudokuController implements Viewable {
     
     private static final String GAMES_DIR = "games/";
@@ -24,7 +21,7 @@ public class SudokuController implements Viewable {
     private static final String LOG_FILE = INCOMPLETE_DIR + "moves.log";
     
     public SudokuController() {
-        // إنشاء المجلدات إذا لم تكن موجودة
+        
         createDirectories();
     }
     
@@ -41,10 +38,8 @@ public class SudokuController implements Viewable {
     
     @Override
     public Catalog getCatalog() {
-        // التحقق من وجود لعبة غير مكتملة
         boolean hasIncomplete = hasIncompleteGame();
         
-        // التحقق من وجود لعبة واحدة على الأقل لكل مستوى
         boolean hasEasy = hasGameInFolder(EASY_DIR);
         boolean hasMedium = hasGameInFolder(MEDIUM_DIR);
         boolean hasHard = hasGameInFolder(HARD_DIR);
@@ -86,7 +81,6 @@ public class SudokuController implements Viewable {
                 throw new NotFoundException("Invalid difficulty level");
         }
         
-        // اختيار ملف عشوائي من المجلد
         File dir = new File(folderPath);
         File[] files = dir.listFiles((d, name) -> name.endsWith(".txt") && !name.equals("moves.log"));
         
@@ -94,13 +88,11 @@ public class SudokuController implements Viewable {
             throw new NotFoundException("No game found for level: " + level);
         }
         
-        // اختيار عشوائي أو الملف الأول
         File selectedFile = files[new Random().nextInt(files.length)];
         
         try {
             int[][] board = loadBoardFromFile(selectedFile);
             
-            // إذا كانت لعبة جديدة (مش incomplete)، انسخها لـ incomplete
             if (level != DifficultyEnum.INCOMPLETE) {
                 saveBoardToFile(board, INCOMPLETE_DIR + "current.txt");
                 
