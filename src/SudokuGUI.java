@@ -340,7 +340,8 @@ public class SudokuGUI extends JFrame {
     
     private void updateSolveButtonState() {
         int emptyCount = countEmptyCells();
-        solveButton.setEnabled(emptyCount == 5);
+        solveButton.setEnabled(emptyCount <= 5 && emptyCount > 0);
+
     }
     
     private int countEmptyCells() {
