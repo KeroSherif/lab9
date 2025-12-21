@@ -93,9 +93,14 @@ public class SudokuController implements Viewable {
             if (level != DifficultyEnum.INCOMPLETE) {
                 saveCurrent(board);
             }
+<<<<<<< HEAD
 
             return new Game(board);
 
+=======
+            
+            return new Game(board, DifficultyEnum.INCOMPLETE);
+>>>>>>> 1fa8a54d1b531bfc413e1fa63c7fd29dc9f22fec
         } catch (IOException e) {
             throw new NotFoundException("Failed to load game");
         }
@@ -132,6 +137,7 @@ public class SudokuController implements Viewable {
         saveGenerated(sourceGame, rp, 20, mediumDir);
         saveGenerated(sourceGame, rp, 25, hardDir);
     }
+<<<<<<< HEAD
 
     private void saveGenerated(Game src, RandomPairs rp, int remove, Path dir) {
         int[][] copy = copyBoard(src.board);
@@ -145,6 +151,27 @@ public class SudokuController implements Viewable {
                     dir.resolve("game_" + System.currentTimeMillis() + ".txt"),
                     copy
             );
+=======
+    
+    private Game generateGame(Game source, RandomPairs randomPairs, int cellsToRemove) {
+        int[][] newBoard = new int[9][9];
+        for (int i = 0; i < 9; i++) {
+            newBoard[i] = source.getBoard()[i].clone();
+        }
+        
+        List<int[]> positions = randomPairs.generateDistinctPairs(cellsToRemove);
+        for (int[] pos : positions) {
+            newBoard[pos[0]][pos[1]] = 0;
+        }
+        
+        return new Game(newBoard, source.getLevel());
+    }
+    
+    private void saveGameToFolder(Game game, String folderPath) {
+        try {
+            String filename = folderPath + "game_" + System.currentTimeMillis() + ".txt";
+            saveBoardToFile(game.getBoard(), filename);
+>>>>>>> 1fa8a54d1b531bfc413e1fa63c7fd29dc9f22fec
         } catch (IOException e) {
             throw new RuntimeException("Failed to save game");
         }
@@ -161,9 +188,17 @@ public class SudokuController implements Viewable {
         for (int i = 0; i < 9; i++) {
             Set<Integer> s = new HashSet<>();
             for (int j = 0; j < 9; j++) {
+<<<<<<< HEAD
                 int v = game.board[i][j];
                 if (v != 0 && !s.add(v)) {
                     invalid.add(i + "," + j);
+=======
+                int val = game.getBoard()[i][j];
+                if (val != 0) {
+                    if (!seen.add(val)) {
+                        invalidCells.add(i + "," + j);
+                    }
+>>>>>>> 1fa8a54d1b531bfc413e1fa63c7fd29dc9f22fec
                 }
             }
         }
@@ -172,9 +207,17 @@ public class SudokuController implements Viewable {
         for (int j = 0; j < 9; j++) {
             Set<Integer> s = new HashSet<>();
             for (int i = 0; i < 9; i++) {
+<<<<<<< HEAD
                 int v = game.board[i][j];
                 if (v != 0 && !s.add(v)) {
                     invalid.add(i + "," + j);
+=======
+                int val = game.getBoard()[i][j];
+                if (val != 0) {
+                    if (!seen.add(val)) {
+                        invalidCells.add(i + "," + j);
+                    }
+>>>>>>> 1fa8a54d1b531bfc413e1fa63c7fd29dc9f22fec
                 }
             }
         }
@@ -185,16 +228,27 @@ public class SudokuController implements Viewable {
                 Set<Integer> s = new HashSet<>();
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
+<<<<<<< HEAD
                         int r = br * 3 + i;
                         int c = bc * 3 + j;
                         int v = game.board[r][c];
                         if (v != 0 && !s.add(v)) {
                             invalid.add(r + "," + c);
+=======
+                        int row = blockRow * 3 + i;
+                        int col = blockCol * 3 + j;
+                        int val = game.getBoard()[row][col];
+                        if (val != 0) {
+                            if (!seen.add(val)) {
+                                invalidCells.add(row + "," + col);
+                            }
+>>>>>>> 1fa8a54d1b531bfc413e1fa63c7fd29dc9f22fec
                         }
                     }
                 }
             }
         }
+<<<<<<< HEAD
 
         boolean complete = true;
         for (int[] row : game.board)
@@ -205,6 +259,26 @@ public class SudokuController implements Viewable {
             return "invalid " + String.join(" ", invalid);
 
         return complete ? "valid" : "incomplete";
+=======
+        
+        boolean isComplete = true;
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                if (game.getBoard()[i][j] == 0) {
+                    isComplete = false;
+                    break;
+                }
+            }
+        }
+        
+        if (!invalidCells.isEmpty()) {
+            return "invalid " + String.join(" ", invalidCells);
+        } else if (isComplete) {
+            return "valid";
+        } else {
+            return "incomplete";
+        }
+>>>>>>> 1fa8a54d1b531bfc413e1fa63c7fd29dc9f22fec
     }
 
     // ===================== Solver =====================

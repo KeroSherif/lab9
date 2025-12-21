@@ -5,15 +5,10 @@
 
 
 /**
- *
+ * Game class - Represents a Sudoku game with board and difficulty level
+ * 
  * @author DANAH
  */
- enum DifficultyEnum {
-    EASY,
-    MEDIUM,
-    HARD
-}
-
 public class Game {
     private int[][] board;
     private DifficultyEnum level; 
@@ -22,6 +17,11 @@ public class Game {
         this.board = board;
         this.level = level;
     }
+    
+    public int[][] getBoard() {
+        return board;
+    }
+    
     public DifficultyEnum getLevel() {
         return level;
     }

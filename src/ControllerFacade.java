@@ -1,150 +1,92 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ * ControllerFacade - The Controller Layer Implementation
+ * 
+ * This class implements the Viewable interface and represents the Controller side
+ * of the MVC architecture. It works with Object types (Game, Catalog, DifficultyEnum).
+ * 
+ * Role: Business logic layer that manages game operations using rich domain objects.
  */
 
-/**
- *
- * @author monic
- */
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
 
-public class ControllerFacade implements Controllable {
+public class ControllerFacade implements Viewable {
     
-    private Viewable controller;
-    
-    public ControllerFacade(Viewable controller) {
-        this.controller = controller;
-    }
-    
+    /**
+     * Retrieves the catalog information containing game status metadata.
+     * 
+     * @return Catalog object with current status and mode availability
+     */
     @Override
-    public boolean[] getCatalog() {
-        Catalog catalog = controller.getCatalog();
-        return new boolean[]{catalog.current, catalog.allModesExist};
+    public Catalog getCatalog() {
+        // TODO: Implement actual catalog retrieval logic
+        // For now, return a dummy catalog
+        return new Catalog(false, true);
     }
     
+    /**
+     * Retrieves a game board for the specified difficulty level.
+     * 
+     * @param level The difficulty level (EASY, MEDIUM, HARD)
+     * @return Game object containing the board for the requested difficulty
+     * @throws NotFoundException if no game exists for the specified level
+     */
     @Override
-    public int[][] getGame(char level) throws NotFoundException {
-        DifficultyEnum difficulty;
-        
-        switch (level) {
-            case 'e':
-                difficulty = DifficultyEnum.EASY;
-                break;
-            case 'm':
-                difficulty = DifficultyEnum.MEDIUM;
-                break;
-            case 'h':
-                difficulty = DifficultyEnum.HARD;
-                break;
-            case 'c':
-                difficulty = DifficultyEnum.INCOMPLETE;
-                break;
-            default:
-                throw new NotFoundException("Invalid difficulty level: " + level);
-        }
-        
-        Game game = controller.getGame(difficulty);
-        return game.board;
+    public Game getGame(DifficultyEnum level) throws NotFoundException {
+        // TODO: Implement actual game retrieval logic
+        // For now, return a dummy 9x9 board
+        int[][] dummyBoard = new int[9][9];
+        return new Game(dummyBoard, level);
     }
     
+    /**
+     * Drives the game generation process from a source game.
+     * 
+     * @param sourceGame The source game to generate from
+     * @throws SolutionInvalidException if the source game solution is invalid
+     */
     @Override
-    public void driveGames(String sourcePath) throws SolutionInvalidException {
-        try {
-            int[][] board = loadBoardFromFile(sourcePath);
-            Game sourceGame = new Game(board);
-            controller.driveGames(sourceGame);
-        } catch (IOException e) {
-            throw new SolutionInvalidException("Error reading source file: " + e.getMessage());
-        }
+    public void driveGames(Game sourceGame) throws SolutionInvalidException {
+        // TODO: Implement game generation logic
+        // Stub method - no implementation yet
     }
     
+    /**
+     * Verifies if a game board is valid according to Sudoku rules.
+     * 
+     * @param game The game to verify
+     * @return String description of verification result (e.g., "VALID", "INVALID: reason")
+     */
     @Override
-    public boolean[][] verifyGame(int[][] game) {
-        Game g = new Game(game);
-        String result = controller.verifyGame(g);
-        
-        boolean[][] validityMatrix = new boolean[9][9];
-        
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-                validityMatrix[i][j] = true;
-            }
-        }
-        
-        if (result.startsWith("invalid")) {
-            String[] parts = result.split(" ");
-            
-            for (int i = 1; i < parts.length; i++) {
-                String[] coords = parts[i].split(",");
-                if (coords.length == 2) {
-                    int x = Integer.parseInt(coords[0]);
-                    int y = Integer.parseInt(coords[1]);
-                    validityMatrix[x][y] = false;
-                }
-            }
-        }
-        
-        return validityMatrix;
+    public String verifyGame(Game game) {
+        // TODO: Implement game verification logic
+        // For now, return a dummy result
+        return "VALID";
     }
     
+    /**
+     * Solves the given game and returns the solution as a flat array.
+     * 
+     * @param game The game to solve
+     * @return int[] array containing the solved board (flattened)
+     * @throws InvalidGameException if the game cannot be solved
+     */
     @Override
-    public int[][] solveGame(int[][] game) throws InvalidGameException {
-        Game g = new Game(game);
-        int[] solution = controller.solveGame(g);
-        return convertSolutionToMatrix(solution, game);
+    public int[] solveGame(Game game) throws InvalidGameException {
+        // TODO: Implement solving logic
+        // For now, return a dummy solution (81 elements for 9x9 board)
+        return new int[81];
     }
     
+    /**
+     * Logs a user action to persistent storage.
+     * 
+     * @param userAction String representation of the user action
+     * @throws IOException if logging fails
+     */
     @Override
-    public void logUserAction(UserAction userAction) throws IOException {
-        String actionString = userAction.toString();
-        controller.logUserAction(actionString);
-    }
-    
-    private int[][] loadBoardFromFile(String filePath) throws IOException {
-        int[][] board = new int[9][9];
-        
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            for (int i = 0; i < 9; i++) {
-                String line = br.readLine();
-                if (line == null) {
-                    throw new IOException("Invalid file format: not enough rows");
-                }
-                
-                String[] values = line.trim().split("\\s+");
-                if (values.length != 9) {
-                    throw new IOException("Invalid row format at line " + (i + 1));
-                }
-                
-                for (int j = 0; j < 9; j++) {
-                    board[i][j] = Integer.parseInt(values[j]);
-                }
-            }
-        }
-        
-        return board;
-    }
-    
-    private int[][] convertSolutionToMatrix(int[] solution, int[][] originalBoard) {
-        List<int[]> emptyCells = new ArrayList<>();
-        
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-                if (originalBoard[i][j] == 0) {
-                    emptyCells.add(new int[]{i, j});
-                }
-            }
-        }
-        
-        int[][] result = new int[emptyCells.size()][3];
-        
-        for (int i = 0; i < emptyCells.size() && i < solution.length; i++) {
-            result[i][0] = emptyCells.get(i)[0];
-            result[i][1] = emptyCells.get(i)[1];
-            result[i][2] = solution[i];
-        }
-        
-        return result;
+    public void logUserAction(String userAction) throws IOException {
+        // TODO: Implement actual logging logic
+        // For now, just print to console
+        System.out.println("LOG: " + userAction);
     }
 }
