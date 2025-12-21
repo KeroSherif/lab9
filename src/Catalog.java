@@ -16,11 +16,11 @@ public class Catalog {
         this.unfinished = unfinished;
         this.allModesExist = allModesExist;
     }
-    public boolean hasUnfinishedGame() {
+   public boolean hasUnfinished() {
         return unfinished;
     }
 
-    public boolean areAllModesReady() {
+    public boolean areModesReady() {
         return allModesExist;
     }
 }
