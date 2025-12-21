@@ -7,8 +7,8 @@
  *
  * @author monic
  */
-public class NotFoundException extends Exception {
-    public NotFoundException(String message) {
+public class InvalidGameException extends Exception {
+    public InvalidGameException(String message) {
         super(message);
     }
 }
