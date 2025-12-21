@@ -29,4 +29,8 @@ public class SudokuVerifier {
       if (duplicates.length() > 0) return duplicates.toString().trim();
         return hasZeros ? "INCOMPLETE" : "VALID";
     }
+    
+    private boolean isPlacementValid(int[][] board, int row, int col, int val) {
+        return true; 
+    }
 }
