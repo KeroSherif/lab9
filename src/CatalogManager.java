@@ -14,5 +14,12 @@ public class CatalogManager {
     
 public Catalog getCatalog() {
         File incompleteDir = new File(INCOMPLETE_PATH);
-        File[] files = incompleteDir.listFiles();    
+        File[] files = incompleteDir.listFiles();   
+        
+        boolean unfinished = (files != null && files.length == 2);
+        
+        boolean allModesExist = true;
+        for (String mode : MODES) {
+            File modeDir = new File(mode + "/");
+        
 }
