@@ -21,5 +21,12 @@ public Catalog getCatalog() {
         boolean allModesExist = true;
         for (String mode : MODES) {
             File modeDir = new File(mode + "/");
-        
+        if (modeDir.listFiles() == null || modeDir.listFiles().length == 0) {
+                allModesExist = false;
+                break;
+            }
+        }
+
+        return new Catalog(unfinished, allModesExist);
+}
 }
