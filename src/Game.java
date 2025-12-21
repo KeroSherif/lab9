@@ -8,5 +8,9 @@
  * @author monic
  */
 public class Game {
+    int[][] board;
     
+    public Game(int[][] board) {
+                this.board = board;
+    }
 }

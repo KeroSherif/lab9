@@ -8,5 +8,11 @@
  * @author monic
  */
 public class Catalog {
+    boolean current;        
+    boolean allModesExist;  
     
+    public Catalog(boolean current, boolean allModesExist) {
+        this.current = current;
+        this.allModesExist = allModesExist;
+    }
 }

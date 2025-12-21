@@ -7,6 +7,9 @@
  *
  * @author monic
  */
-public class DifficultyEnum {
-    
+public enum DifficultyEnum {
+    EASY,
+    MEDIUM,
+    HARD,
+    INCOMPLETE
 }
