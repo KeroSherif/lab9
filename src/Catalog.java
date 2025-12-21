@@ -30,7 +30,8 @@ public class Catalog {
         this.allModesExist = allModesExist;
     }
 
-    // ===== flags =====
+    // ================= FLAGS =================
+
     public boolean hasUnfinished() {
         return unfinished;
     }
@@ -47,11 +48,41 @@ public class Catalog {
         this.allModesExist = allModesExist;
     }
 
-    // ===== games =====
+    // ================= GAMES =================
+
     public void addGame(Game game) {
         games.add(game);
     }
 
     public Game getCurrentGame() {
+        if (games.isEmpty()) return null;
+        return games.get(currentIndex);
+    }
 
+    
+    public void nextGame() {
+        if (!games.isEmpty()) {
+            currentIndex = (currentIndex + 1) % games.size();
+        }
+    }
 
+    
+    public int getCurrentIndex() {
+        return currentIndex;
+    }
+
+    
+    public void showAllGames() {
+        if (games.isEmpty()) {
+            System.out.println("No games in catalog.");
+            return;
+        }
+
+        for (int i = 0; i < games.size(); i++) {
+            System.out.println(
+                "Game " + i +
+                " | Level: " + games.get(i).getLevel()
+            );
+        }
+    }
+}
