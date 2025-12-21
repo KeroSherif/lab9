@@ -25,5 +25,10 @@ public class Game {
     public DifficultyEnum getLevel() {
         return level;
     }
+    @Override
+public String toString() {
+    return "Game(Level: " + level + ", Board size: " + board.length + "x" + board[0].length + ")";
+}
+
 }
 

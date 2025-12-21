@@ -10,6 +10,8 @@
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import sudoku.InvalidGameException;
+
 
 public class SudokuController implements Viewable {
 
@@ -208,8 +210,8 @@ public class SudokuController implements Viewable {
     // ===================== Solver =====================
 
     @Override
-    public int[] solveGame(Game game) throws InvalidGame {
-        throw new InvalidGame("Solver not implemented");
+    public int[] solveGame(Game game) throws InvalidGameException {
+    throw new InvalidGameException("Solver not implemented yet");
     }
 
     // ===================== Logging =====================
