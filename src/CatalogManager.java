@@ -16,19 +16,13 @@ public class CatalogManager {
     
 public Catalog getCatalog() {
         File incompleteDir = new File(INCOMPLETE_PATH);
-        File[] files = incompleteDir.listFiles();   
+        File[] incompleteFiles = incompleteDir.listFiles();
         
-        boolean unfinished = (files != null && files.length == 2);
+        boolean unfinished = (incompleteFiles != null && incompleteFiles.length == 2);
         
-        boolean allModesExist = true;
-        for (String mode : MODES) {
-            File modeDir = new File(mode + "/");
-        if (modeDir.listFiles() == null || modeDir.listFiles().length == 0) {
-                allModesExist = false;
-                break;
-            }
-        }
+        boolean allModesExist = checkFolderHasFiles(EASY_PATH) && checkFolderHasFiles(MEDIUM_PATH) && checkFolderHasFiles(HARD_PATH);
 
         return new Catalog(unfinished, allModesExist);
-}
-}
+    }
+
+
