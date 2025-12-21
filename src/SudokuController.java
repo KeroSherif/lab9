@@ -63,8 +63,12 @@ public class SudokuController implements Controllable {
     // ================= GENERATE =================
     @Override
     public void driveGames(String sourcePath) throws SolutionInvalidException {
-        // مؤقت لحد ما تعمل Generator
-        throw new SolutionInvalidException("Generator not implemented");
+        GameGenerator generator = new GameGenerator();
+        try {
+            generator.generateLevels(sourcePath);
+        } catch (GameGenerator.SolutionInvalidException e) {
+            throw new SolutionInvalidException(e.getMessage());
+        }
     }
 
     // ================= VERIFY =================
@@ -90,7 +94,20 @@ public class SudokuController implements Controllable {
     // ================= SOLVE =================
     @Override
     public int[][] solveGame(int[][] game) throws InvalidGameException {
-        throw new InvalidGameException("Solver not implemented");
+        int[][] copy = new int[9][9];
+        for (int i = 0; i < 9; i++) {
+            System.arraycopy(game[i], 0, copy[i], 0, 9);
+        }
+        
+        try {
+            int[] solution = SudokuSolver.solve(copy);
+            if (solution == null) {
+                throw new InvalidGameException("No solution found");
+            }
+            return copy;
+        } catch (Exception e) {
+            throw new InvalidGameException("Solver error: " + e.getMessage());
+        }
     }
 
     // ================= LOG =================

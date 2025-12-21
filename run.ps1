@@ -29,4 +29,4 @@ if (-not (Test-Path $Board)) {
 }
 
 Write-Host "Running: mode=$Mode board=$Board" -ForegroundColor Cyan
-& java -cp $outDir main $Board $Mode
+& java -cp $outDir Main $Board $Mode

@@ -67,6 +67,11 @@ public class GameGenerator {
     }
 
     private int[][] loadBoardFromFile(String path) {
-        return new int[9][9];
+        try {
+            return SudokuBoardManager.loadBoard(path);
+        } catch (Exception e) {
+            System.err.println("Error loading board: " + e.getMessage());
+            return new int[9][9];
+        }
     }
 }

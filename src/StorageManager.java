@@ -73,16 +73,16 @@ public class StorageManager {
 
         switch (diff) {
             case EASY:
-                folderPath = "easy/";
+                folderPath = "games/easy/";
                 break;
             case MEDIUM:
-                folderPath = "medium/";
+                folderPath = "games/medium/";
                 break;
             case HARD:
-                folderPath = "hard/";
+                folderPath = "games/hard/";
                 break;
             default:
-                folderPath = "easy/";
+                folderPath = "games/easy/";
         }
 
         File dir = new File(folderPath);
