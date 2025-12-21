@@ -2,7 +2,7 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
-public class SudokuController implements Viewable {
+public class SudokuController implements Controllable {
 
     private static final String GAMES_DIR = "games/";
     private static final String EASY_DIR = GAMES_DIR + "easy/";
@@ -12,228 +12,106 @@ public class SudokuController implements Viewable {
     private static final String LOG_FILE = INCOMPLETE_DIR + "moves.log";
 
     public SudokuController() {
-        createDirectories();
-    }
-
-    // ===================== Directories =====================
-
-    private void createDirectories() {
         try {
             Files.createDirectories(Paths.get(EASY_DIR));
             Files.createDirectories(Paths.get(MEDIUM_DIR));
             Files.createDirectories(Paths.get(HARD_DIR));
             Files.createDirectories(Paths.get(INCOMPLETE_DIR));
         } catch (IOException e) {
-            throw new RuntimeException("Error creating directories");
+            throw new RuntimeException(e);
         }
     }
 
-    // ===================== Catalog =====================
-
+    // ================= CATALOG =================
     @Override
-    public Catalog getCatalog() {
-        boolean hasIncomplete = hasGameInFolder(INCOMPLETE_DIR);
-        boolean hasAllLevels =
-                hasGameInFolder(EASY_DIR) &&
-                hasGameInFolder(MEDIUM_DIR) &&
-                hasGameInFolder(HARD_DIR);
+    public boolean[] getCatalog() {
+        boolean hasIncomplete = hasGame(INCOMPLETE_DIR);
+        boolean hasAll =
+                hasGame(EASY_DIR) &&
+                hasGame(MEDIUM_DIR) &&
+                hasGame(HARD_DIR);
 
-        return new Catalog(hasIncomplete, hasAllLevels);
+        return new boolean[]{hasIncomplete, hasAll};
     }
 
-    private boolean hasGameInFolder(String folderPath) {
-        File dir = new File(folderPath);
-        File[] files = dir.listFiles(
-                (d, name) -> name.endsWith(".txt") && !name.equals("moves.log")
-        );
+    private boolean hasGame(String dirPath) {
+        File dir = new File(dirPath);
+        File[] files = dir.listFiles((d, n) -> n.endsWith(".txt"));
         return files != null && files.length > 0;
     }
 
-    // ===================== Load Game =====================
-
+    // ================= LOAD GAME =================
     @Override
-    public Game getGame(DifficultyEnum level) throws NotFoundException {
+    public int[][] getGame(char level) throws NotFoundException {
 
-        String folderPath;
-
+        String dir;
         switch (level) {
-            case EASY -> folderPath = EASY_DIR;
-            case MEDIUM -> folderPath = MEDIUM_DIR;
-            case HARD -> folderPath = HARD_DIR;
-            case INCOMPLETE -> folderPath = INCOMPLETE_DIR;
-            default -> throw new NotFoundException("Invalid difficulty");
+            case 'e': dir = EASY_DIR; break;
+            case 'm': dir = MEDIUM_DIR; break;
+            case 'h': dir = HARD_DIR; break;
+            case 'c': dir = INCOMPLETE_DIR; break;
+            default: throw new NotFoundException("Invalid level");
         }
 
-        File dir = new File(folderPath);
-        File[] files = dir.listFiles(
-                (d, name) -> name.endsWith(".txt") && !name.equals("moves.log")
-        );
-
-        if (files == null || files.length == 0) {
+        File[] files = new File(dir).listFiles((d, n) -> n.endsWith(".txt"));
+        if (files == null || files.length == 0)
             throw new NotFoundException("No game found");
-        }
 
-        File selected = files[new Random().nextInt(files.length)];
-
-        try {
-            int[][] board = loadBoardFromFile(selected);
-
-            if (level != DifficultyEnum.INCOMPLETE) {
-                saveBoardToFile(board, INCOMPLETE_DIR + "current.txt");
-                new File(LOG_FILE).delete();
-            }
-
-            return new Game(board, level);
-
-        } catch (IOException e) {
-            throw new NotFoundException("Failed to load game");
-        }
+        return loadBoard(files[0]);
     }
 
-    // ===================== Drive Games =====================
-
+    // ================= GENERATE =================
     @Override
-    public void driveGames(Game sourceGame) throws SolutionInvalidException {
-
-        String result = verifyGame(sourceGame);
-        if (!result.equals("valid")) {
-            throw new SolutionInvalidException(result);
-        }
-
-        RandomPairs rp = new RandomPairs();
-
-        saveGameToFolder(generateGame(sourceGame, rp, 10), EASY_DIR);
-        saveGameToFolder(generateGame(sourceGame, rp, 20), MEDIUM_DIR);
-        saveGameToFolder(generateGame(sourceGame, rp, 25), HARD_DIR);
+    public void driveGames(String sourcePath) throws SolutionInvalidException {
+        // مؤقت لحد ما تعمل Generator
+        throw new SolutionInvalidException("Generator not implemented");
     }
 
-    private Game generateGame(Game source, RandomPairs rp, int remove) {
-
-        int[][] newBoard = new int[9][9];
-        for (int i = 0; i < 9; i++) {
-            newBoard[i] = source.getBoard()[i].clone();
-        }
-
-        for (int[] pos : rp.generateDistinctPairs(remove)) {
-            newBoard[pos[0]][pos[1]] = 0;
-        }
-
-        return new Game(newBoard, source.getLevel());
-    }
-
-    private void saveGameToFolder(Game game, String folderPath) {
-        try {
-            String filename = folderPath + "game_" + System.currentTimeMillis() + ".txt";
-            saveBoardToFile(game.getBoard(), filename);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to save game");
-        }
-    }
-
-    // ===================== Verification =====================
-
+    // ================= VERIFY =================
     @Override
-    public String verifyGame(Game game) {
+    public boolean[][] verifyGame(int[][] board) {
 
-        List<String> invalid = new ArrayList<>();
-        int[][] board = game.getBoard();
+        boolean[][] valid = new boolean[9][9];
+        for (int i = 0; i < 9; i++)
+            Arrays.fill(valid[i], true);
 
         // rows
         for (int i = 0; i < 9; i++) {
             Set<Integer> s = new HashSet<>();
             for (int j = 0; j < 9; j++) {
                 int v = board[i][j];
-                if (v != 0 && !s.add(v)) {
-                    invalid.add(i + "," + j);
-                }
+                if (v != 0 && !s.add(v))
+                    valid[i][j] = false;
             }
         }
-
-        // columns
-        for (int j = 0; j < 9; j++) {
-            Set<Integer> s = new HashSet<>();
-            for (int i = 0; i < 9; i++) {
-                int v = board[i][j];
-                if (v != 0 && !s.add(v)) {
-                    invalid.add(i + "," + j);
-                }
-            }
-        }
-
-        // blocks
-        for (int br = 0; br < 3; br++) {
-            for (int bc = 0; bc < 3; bc++) {
-                Set<Integer> s = new HashSet<>();
-                for (int i = 0; i < 3; i++) {
-                    for (int j = 0; j < 3; j++) {
-                        int r = br * 3 + i;
-                        int c = bc * 3 + j;
-                        int v = board[r][c];
-                        if (v != 0 && !s.add(v)) {
-                            invalid.add(r + "," + c);
-                        }
-                    }
-                }
-            }
-        }
-
-        boolean complete = true;
-        for (int[] row : board) {
-            for (int v : row) {
-                if (v == 0) {
-                    complete = false;
-                    break;
-                }
-            }
-        }
-
-        if (!invalid.isEmpty())
-            return "invalid " + String.join(" ", invalid);
-
-        return complete ? "valid" : "incomplete";
+        return valid;
     }
 
-    // ===================== Solver =====================
-
+    // ================= SOLVE =================
     @Override
-    public int[] solveGame(Game game) throws InvalidGameException {
-        throw new InvalidGameException("Solver not implemented yet");
+    public int[][] solveGame(int[][] game) throws InvalidGameException {
+        throw new InvalidGameException("Solver not implemented");
     }
 
-    // ===================== Logging =====================
-
+    // ================= LOG =================
     @Override
-    public void logUserAction(String userAction) throws IOException {
+    public void logUserAction(UserAction action) throws IOException {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(LOG_FILE, true))) {
-            bw.write(userAction);
+            bw.write(action.toString());
             bw.newLine();
         }
     }
 
-    // ===================== Helpers =====================
-
-    private int[][] loadBoardFromFile(File file) throws IOException {
-        int[][] board = new int[9][9];
-
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            for (int i = 0; i < 9; i++) {
-                String[] vals = br.readLine().trim().split("\\s+");
-                for (int j = 0; j < 9; j++) {
-                    board[i][j] = Integer.parseInt(vals[j]);
-                }
-            }
+    // ================= HELPERS =================
+    private int[][] loadBoard(File f) throws NotFoundException {
+        int[][] b = new int[9][9];
+        try (Scanner sc = new Scanner(f)) {
+            for (int i = 0; i < 9; i++)
+                for (int j = 0; j < 9; j++)
+                    b[i][j] = sc.nextInt();
+        } catch (Exception e) {
+            throw new NotFoundException("Invalid file");
         }
-        return board;
-    }
-
-    private void saveBoardToFile(int[][] board, String filename) throws IOException {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(filename))) {
-            for (int[] row : board) {
-                for (int v : row) {
-                    bw.write(v + " ");
-                }
-                bw.newLine();
-            }
-        }
+        return b;
     }
 }

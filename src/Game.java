@@ -17,18 +17,25 @@ public class Game {
         this.board = board;
         this.level = level;
     }
-    
+
+    // ⬅️ الكونستركتور الجديد
+    public Game(int[][] board) {
+        this.board = board;
+        this.level = DifficultyEnum.INCOMPLETE;
+    }
+
     public int[][] getBoard() {
         return board;
     }
-    
+
     public DifficultyEnum getLevel() {
         return level;
     }
+
     @Override
-public String toString() {
-    return "Game(Level: " + level + ", Board size: " + board.length + "x" + board[0].length + ")";
+    public String toString() {
+        return "Game(Level: " + level + ", Board size: 9x9)";
+    }
 }
 
-}
 
