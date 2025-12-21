@@ -4,18 +4,26 @@
  */
 package lab9;
 
+import java.io.File;
+import java.io.IOException;
+
 /**
  *
  * @author DANAH
  */
 public class StorageManager {
-    private final String INCOMPLETE_DIR = "incomplete/";
+   private final String INCOMPLETE_DIR = "incomplete/";
+    private final String GAME_FILE = "incomplete/game.txt";
+    private final String LOG_FILE = "incomplete/log.txt";
     
-    public void saveIncompleteGame(int[][] board, String logContent) {
-        // Implementation must ensure BOTH files are written
-        // 1. Save board state to "game.txt"
-        // 2. Save log content to "log.txt"
-        // Result: Folder contains exactly 2 files [cite: 37, 38, 86]
+   public void saveIncompleteGame(int[][] board, String moveLog) throws IOException {
+       File dir = new File(INCOMPLETE_DIR);
+        if (!dir.exists()) dir.mkdir();
+        
+        saveBoard(board, GAME_FILE);
+        saveLog(moveLog, LOG_FILE);
+        System.out.println("Rule 3 Enforced: 2 files saved in /incomplete.");
+    
     }
     
     public void clearIncompleteFolder() {
@@ -28,4 +36,12 @@ public class StorageManager {
         }
         // Result: Folder contains 0 files [cite: 86]
 }
+
+    private void saveLog(String moveLog, String LOG_FILE) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    private void saveBoard(int[][] board, String GAME_FILE) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }
