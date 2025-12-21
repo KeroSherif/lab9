@@ -8,52 +8,60 @@ import exceptions.InvalidGameException;
 import exceptions.NotFoundException;
 import exceptions.SolutionInvalidException;
 
-
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Random;
 import model.Catalog;
 
 import model.DifficultyEnum;
+import static model.DifficultyEnum.EASY;
+import static model.DifficultyEnum.HARD;
+import static model.DifficultyEnum.INCOMPLETE;
+import static model.DifficultyEnum.MEDIUM;
 import model.Game;
 import view.Viewable;
 
 public class ControllerFacade implements Viewable {
+
     private final SudokuController primitiveController;
 
     public ControllerFacade() {
         this.primitiveController = new SudokuController();
     }
-    
-   
+
     @Override
     public Catalog getCatalog() {
         boolean[] flags = primitiveController.getCatalog();
-       
-        return new Catalog(flags[0], flags[1]) {};
+
+        return new Catalog(flags[0], flags[1]) {
+        };
     }
-    
-   
+
     @Override
     public Game getGame(DifficultyEnum level) throws NotFoundException {
+
         char ch = switch (level) {
-            case EASY -> 'e';
-            case MEDIUM -> 'm';
-            case HARD -> 'h';
-            case INCOMPLETE -> 'c';
+            case EASY ->
+                'e';
+            case MEDIUM ->
+                'm';
+            case HARD ->
+                'h';
+            case INCOMPLETE ->
+                'c';
         };
+
         int[][] board = primitiveController.getGame(ch);
         return new Game(board, level);
     }
-    
-   
+
     @Override
     public void driveGames(Game sourceGame) throws SolutionInvalidException {
-       
+
         String tempPath = "games/source-temp.txt";
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(tempPath))) {
             int[][] board = sourceGame.getBoard();
@@ -69,7 +77,6 @@ public class ControllerFacade implements Viewable {
 
         primitiveController.driveGames(tempPath);
     }
-    
 
     @Override
     public String verifyGame(Game game) {
@@ -83,7 +90,7 @@ public class ControllerFacade implements Viewable {
         }
         return sb.toString();
     }
- 
+
     @Override
     public int[] solveGame(Game game) throws InvalidGameException {
         int[][] solved = primitiveController.solveGame(game.getBoard());
@@ -95,8 +102,7 @@ public class ControllerFacade implements Viewable {
         }
         return flat;
     }
-    
-  
+
     @Override
     public void logUserAction(String userAction) throws IOException {
         // Append to the moves log in the incomplete directory
@@ -115,6 +121,21 @@ public class ControllerFacade implements Viewable {
     @Override
     public void deleteCompletedGame() {
         primitiveController.deleteCompletedGame();
+    }
+
+    private void removeCells(int[][] board, int cellsToRemove) {
+        Random rand = new Random();
+        int removed = 0;
+
+        while (removed < cellsToRemove) {
+            int i = rand.nextInt(9);
+            int j = rand.nextInt(9);
+
+            if (board[i][j] != 0) {
+                board[i][j] = 0;
+                removed++;
+            }
+        }
     }
 
     @Override

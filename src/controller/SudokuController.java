@@ -10,15 +10,12 @@ import exceptions.NotFoundException;
 import exceptions.SolutionInvalidException;
 import generator.GameGenerator;
 
-
 import java.io.*;
 import java.util.*;
-
 
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
-
 
 import java.io.*;
 import java.nio.file.*;
@@ -28,6 +25,10 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import model.DifficultyEnum;
+import static model.DifficultyEnum.EASY;
+import static model.DifficultyEnum.HARD;
+import static model.DifficultyEnum.INCOMPLETE;
+import static model.DifficultyEnum.MEDIUM;
 import solver.MultiThreadedSudokuSolver;
 import storage.UndoLogger;
 
@@ -39,7 +40,7 @@ public class SudokuController implements Controllable {
     private static final String HARD_DIR = GAMES_DIR + "hard/";
     private static final String INCOMPLETE_DIR = GAMES_DIR + "incomplete/";
     private static final String LOG_FILE = INCOMPLETE_DIR + "moves.log";
-    
+
     // Track current game difficulty for deletion when completed
     private DifficultyEnum currentGameDifficulty = null;
     private String currentGameFile = null;
@@ -72,12 +73,18 @@ public class SudokuController implements Controllable {
     // ================= LOAD GAME =================
     @Override
     public int[][] getGame(char level) throws NotFoundException {
+
         String dir = switch (level) {
-            case 'e' -> EASY_DIR;
-            case 'm' -> MEDIUM_DIR;
-            case 'h' -> HARD_DIR;
-            case 'c' -> INCOMPLETE_DIR;
-            default -> throw new NotFoundException("Invalid level");
+            case 'e' ->
+                EASY_DIR;
+            case 'm' ->
+                MEDIUM_DIR;
+            case 'h' ->
+                HARD_DIR;
+            case 'c' ->
+                INCOMPLETE_DIR;
+            default ->
+                throw new NotFoundException("Invalid level");
         };
 
         File[] files = new File(dir).listFiles((d, n) -> n.endsWith(".txt"));
@@ -88,8 +95,8 @@ public class SudokuController implements Controllable {
         try {
             File selectedFile = files[new Random().nextInt(files.length)];
             int[][] board = readBoardFromFile(selectedFile);
-            
-            // Track difficulty and file for later deletion if completed
+
+            // track game for deletion
             if (level == 'e') {
                 currentGameDifficulty = DifficultyEnum.EASY;
                 currentGameFile = selectedFile.getName();
@@ -103,11 +110,13 @@ public class SudokuController implements Controllable {
                 currentGameDifficulty = null;
                 currentGameFile = null;
             }
-            
+
             if (level != 'c') {
                 saveIncompleteGame(board);
             }
+
             return board;
+
         } catch (IOException e) {
             throw new NotFoundException("Invalid file");
         }
@@ -195,11 +204,11 @@ public class SudokuController implements Controllable {
     @Override
     public int[][] solveGame(int[][] game) throws InvalidGameException {
         int emptyCount = countEmptyCells(game);
-        
+
         // Check if exactly 5 empty cells
         if (emptyCount != 5) {
             throw new InvalidGameException(
-                "Solver only works with exactly 5 empty cells. Current: " + emptyCount
+                    "Solver only works with exactly 5 empty cells. Current: " + emptyCount
             );
         }
 
@@ -323,7 +332,7 @@ public class SudokuController implements Controllable {
 
         File chosen = files[new Random().nextInt(files.length)];
         int[][] board = readBoardFromFile(chosen);
-        
+
         // Track for deletion when completed
         currentGameDifficulty = difficulty;
         currentGameFile = chosen.getName();
@@ -337,7 +346,7 @@ public class SudokuController implements Controllable {
     // ================= LOAD SELECTED =================
     public int[][] loadSelectedGame(File file) throws Exception {
         int[][] board = readBoardFromFile(file);
-        
+
         // Try to determine difficulty from file path
         String path = file.getAbsolutePath();
         if (path.contains("easy")) {
@@ -355,34 +364,50 @@ public class SudokuController implements Controllable {
         saveBoardToFile(board, INCOMPLETE_DIR + "current.txt");
         return board;
     }
-    
+
     // ================= DELETE COMPLETED GAME =================
-    /**
-     * Deletes the current game from its difficulty folder and clears incomplete folder.
-     * Called when user completes the puzzle successfully.
-     */
     public void deleteCompletedGame() {
         if (currentGameDifficulty != null && currentGameFile != null) {
             String dir = switch (currentGameDifficulty) {
-                case EASY -> EASY_DIR;
-                case MEDIUM -> MEDIUM_DIR;
-                case HARD -> HARD_DIR;
-                case INCOMPLETE -> INCOMPLETE_DIR; // Should not happen, but handle for completeness
+                case EASY ->
+                    EASY_DIR;
+                case MEDIUM ->
+                    MEDIUM_DIR;
+                case HARD ->
+                    HARD_DIR;
+                case INCOMPLETE ->
+                    INCOMPLETE_DIR; // Should not happen, but handle for completeness
             };
-            
+
             File gameFile = new File(dir + currentGameFile);
             if (gameFile.exists()) {
                 gameFile.delete();
                 System.out.println("Deleted completed game: " + gameFile.getPath());
             }
         }
-        
+
         // Clear incomplete folder (both game and log files)
         clearIncompleteGame();
-        
+
         // Reset tracking
         currentGameDifficulty = null;
         currentGameFile = null;
+    }
+
+    // ================= REMOVE CELL ACCORDDING TO DIFFICULTY GAME =================
+    private void removeCells(int[][] board, int cellsToRemove) {
+        Random rand = new Random();
+        int removed = 0;
+
+        while (removed < cellsToRemove) {
+            int i = rand.nextInt(9);
+            int j = rand.nextInt(9);
+
+            if (board[i][j] != 0) {
+                board[i][j] = 0;
+                removed++;
+            }
+        }
     }
 
 }
