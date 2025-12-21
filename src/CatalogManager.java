@@ -4,6 +4,7 @@
  */
 package lab9;
 import java.io.File;
+import javax.xml.catalog.Catalog;
 /**
  *
  * @author DANAH
@@ -18,7 +19,7 @@ public Catalog getCatalog() {
         boolean unfinished = checkIncompleteFolder();
         boolean allModesExist = checkDifficultyFolders();
        
-        return new Catalog(unfinished, allModesExist);
+        return new Catalog(unfinished, allModesExist) {};
 }
 private boolean checkIncompleteFolder() {
         File folder = new File(INCOMPLETE_DIR);
@@ -30,5 +31,19 @@ private boolean checkIncompleteFolder() {
         File[] files = folder.listFiles();
         return (files != null && files.length == 2);
     }
+private boolean checkDifficultyFolders() {
+        return hasFiles(EASY_DIR) && hasFiles(MEDIUM_DIR) && hasFiles(HARD_DIR);
+    }
 
-}
+    private boolean hasFiles(String path) {
+        File dir = new File(path);
+        if (!dir.exists()) {
+            dir.mkdir();
+            return false;
+        }
+        
+       File[] files = dir.listFiles();
+        return (files != null && files.length > 0);
+    }
+} 
+
