@@ -17,20 +17,29 @@ public class SudokuVerifier {
             for (int c = 0; c < 9; c++) {
                 int val = board[r][c];
                 if (val == 0) {
-                    hasZeros = true; // State: INCOMPLETE [cite: 34]
-                    continue;
-                } 
-                
-             if (!isPlacementValid(board, r, c, val)) {
-                    duplicates.append(r).append(",").append(c).append(" "); // State: INVALID [cite: 34]
+                    hasZeros = true; 
+                    } else if (!isSafe(board, r, c, val)) {
+                    duplicates.append(r).append(",").append(c).append(" ");
                 }
             }
         }
-      if (duplicates.length() > 0) return duplicates.toString().trim();
+        if (duplicates.length() > 0) return duplicates.toString().trim();
         return hasZeros ? "INCOMPLETE" : "VALID";
     }
     
-    private boolean isPlacementValid(int[][] board, int row, int col, int val) {
-        return true; 
+public boolean isSafe(int[][] board, int row, int col, int num) {
+        for (int i = 0; i < 9; i++) {
+            if (i != col && board[row][i] == num) return false;
+            if (i != row && board[i][col] == num) return false;
+        }
+        int startRow = (row / 3) * 3, startCol = (col / 3) * 3;
+        for (int r = startRow; r < startRow + 3; r++) {
+            for (int c = startCol; c < startCol + 3; c++) {
+                if ((r != row || c != col) && board[r][c] == num) return false;
+            }
+        }
+        return true;
     }
 }
+                
+             
