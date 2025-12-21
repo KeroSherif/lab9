@@ -89,11 +89,58 @@ public class SudokuController implements Controllable {
 
         // rows
         for (int i = 0; i < 9; i++) {
-            Set<Integer> s = new HashSet<>();
+            Map<Integer, Integer> counts = new HashMap<>();
             for (int j = 0; j < 9; j++) {
                 int v = board[i][j];
-                if (v != 0 && !s.add(v)) {
+
+                if (v != 0) {
+                    counts.put(v, counts.getOrDefault(v, 0) + 1);
+                }
+            }
+            for (int j = 0; j < 9; j++) {
+                int v = board[i][j];
+                if (v != 0 && counts.get(v) > 1) {
                     valid[i][j] = false;
+                }
+            }
+        }
+
+        // columns
+        for (int j = 0; j < 9; j++) {
+            Map<Integer, Integer> counts = new HashMap<>();
+            for (int i = 0; i < 9; i++) {
+                int v = board[i][j];
+                if (v != 0) {
+                    counts.put(v, counts.getOrDefault(v, 0) + 1);
+                }
+            }
+            for (int i = 0; i < 9; i++) {
+                int v = board[i][j];
+                if (v != 0 && counts.get(v) > 1) {
+                    valid[i][j] = false;
+                }
+            }
+        }
+
+        // 3x3 boxes
+        for (int boxRow = 0; boxRow < 3; boxRow++) {
+            for (int boxCol = 0; boxCol < 3; boxCol++) {
+                Map<Integer, Integer> counts = new HashMap<>();
+                for (int i = boxRow * 3; i < boxRow * 3 + 3; i++) {
+                    for (int j = boxCol * 3; j < boxCol * 3 + 3; j++) {
+                        int v = board[i][j];
+                        if (v != 0) {
+                            counts.put(v, counts.getOrDefault(v, 0) + 1);
+                        }
+                    }
+                }
+                for (int i = boxRow * 3; i < boxRow * 3 + 3; i++) {
+                    for (int j = boxCol * 3; j < boxCol * 3 + 3; j++) {
+                        int v = board[i][j];
+                        if (v != 0 && counts.get(v) > 1) {
+                            valid[i][j] = false;
+                        }
+                    }
                 }
             }
         }
