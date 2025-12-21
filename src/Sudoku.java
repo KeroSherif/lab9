@@ -1,9 +1,4 @@
-import core.SudokuValidator;
-import core.ValidationResult;
-import core.SudokuBoardManager;
-import core.BoardPrinter;
 
-import utils.ValidatorFactory;
 
 public class Sudoku {
 
@@ -11,76 +6,36 @@ public class Sudoku {
 
         if (args == null || args.length == 0) {
             System.out.println("No arguments provided!");
-            System.out.println("Usage: java Sudoku <board.csv> <mode>");
-            return;
-        }
-
-        if (args.length == 1) {
-            System.out.println("Missing mode argument!");
-            System.out.println("Usage: java Sudoku <board.csv> <mode>");
+            System.out.println("Usage: java Sudoku <board.csv>");
             return;
         }
 
         String filePath = args[0];
-        int mode;
-
-        try {
-            mode = Integer.parseInt(args[1]);
-            if (mode != 0 && mode != 3 && mode != 27) {
-                System.out.println("Invalid mode value! Must be 0, 3, or 27.");
-                return;
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid mode! Must be 0, 3, or 27.");
-            return;
-        }
-
         int[][] board;
 
         try {
-            board = SudokuBoardManager.loadOrCreateBoard(filePath);
+            board = SudokuBoardManager.loadBoard(filePath);
         } catch (Exception e) {
             System.out.println("Failed to load board: " + e.getMessage());
             return;
         }
 
         // ======================================================
-        //  PRINT THE BOARD FIRST
+        //  PRINT THE BOARD
         // ======================================================
         BoardPrinter.print(board);
 
         // ======================================================
-        //  SHOW USER WHICH MODE IS RUNNING
+        //  RUN SEQUENTIAL VALIDATION (ONLY MODE IN LAB 10)
         // ======================================================
-        switch (mode) {
-            case 0 ->
-                System.out.println(" Running Sudoku Validator in MODE 0 (Sequential)...");
-            case 3 ->
-                System.out.println(" Running Sudoku Validator in MODE 3 (3 Threads)...");
-            case 27 ->
-                System.out.println(" Running Sudoku Validator in MODE 27 (27 Threads)...");
-        }
+        System.out.println(" Running Sudoku Validator (Sequential Mode)...");
 
-        // ======================================================
-        //  SELECT VALIDATION MODE
-        // ======================================================
-        SudokuValidator validator;
-        try {
-            validator = ValidatorFactory.get(mode);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Invalid mode!");
-            return;
-        }
-
-        // ======================================================
-        //  RUN VALIDATION
-        // ======================================================
+        SudokuValidator validator = SequentialValidator.getInstance();
         ValidationResult result = validator.validate(board);
 
-        if (result.isValid()) {
-            System.out.println("VALID");
-        } else {
-            System.out.println(result.formatGrouped());
-        }
+        // ======================================================
+        //  PRINT RESULT
+        // ======================================================
+        System.out.println(result.formatResult());
     }
 }
