@@ -8,17 +8,16 @@ package lab9;
  *
  * @author DANAH
  */
-public enum DifficultyEnum {
-    EASY, MEDIUM, HARD
-}
+public class Game {
+    private int[][] board;
+    private DifficultyEnum level; 
 
-public class Catalog {
-    private final boolean unfinished;
-    private final boolean allModesExist;
-
-    public Catalog(boolean unfinished, boolean allModesExist) {
-        this.unfinished = unfinished;
-        this.allModesExist = allModesExist;
+    public Game(int[][] board, DifficultyEnum level) {
+        this.board = board;
+        this.level = level;
     }
-    
+    public DifficultyEnum getLevel() {
+        return level;
+    }
 }
+
