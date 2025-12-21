@@ -1,36 +1,58 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 
 
-/**
- *
- * @author kiro sherif
- */
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class ValidationResult {
-    private boolean isValid;
-    private List<String> errors;
 
-    public ValidationResult(boolean isValid, List<String> errors) {
-        this.isValid = isValid;
-        this.errors = Collections.synchronizedList(new ArrayList<>(errors));
+    public enum State {
+        VALID,
+        INVALID,
+        INCOMPLETE
     }
 
-    public boolean isValid() {
-        return isValid;
+    private State state;
+    private final List<String> errors;
+
+    public ValidationResult() {
+        this.state = State.VALID;
+        this.errors = new ArrayList<>();
+    }
+
+    public void addError(String err) {
+        errors.add(err);
+        state = State.INVALID;
+    }
+
+    public void markIncomplete() {
+        if (state == State.VALID) {
+            state = State.INCOMPLETE;
+        }
+    }
+
+    public State getState() {
+        return state;
     }
 
     public List<String> getErrors() {
-        return new ArrayList<>(errors);
+        return errors;
     }
 
-    public void addError(String error) {
-        errors.add(error);
+    public boolean isValid() {
+        return state == State.VALID;
+    }
+
+    public String formatResult() {
+        if (state == State.VALID)
+            return "VALID";
+
+        if (state == State.INCOMPLETE)
+            return "INCOMPLETE";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("INVALID\n");
+        for (String e : errors) {
+            sb.append(e).append("\n");
+        }
+        return sb.toString();
     }
 }
