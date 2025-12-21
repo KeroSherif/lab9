@@ -3,26 +3,32 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package lab9;
-
+import java.io.File;
 /**
  *
  * @author DANAH
  */
 public class CatalogManager {
-    private final String EASY_PATH = "easy/";
-    private final String MEDIUM_PATH = "medium/";
-    private final String HARD_PATH = "hard/";
-    private final String INCOMPLETE_PATH = "incomplete/";
+   private final String EASY_DIR = "easy";
+    private final String MEDIUM_DIR = "medium";
+    private final String HARD_DIR = "hard";
+    private final String INCOMPLETE_DIR = "incomplete";
     
 public Catalog getCatalog() {
-        File incompleteDir = new File(INCOMPLETE_PATH);
-        File[] incompleteFiles = incompleteDir.listFiles();
-        
-        boolean unfinished = (incompleteFiles != null && incompleteFiles.length == 2);
-        
-        boolean allModesExist = checkFolderHasFiles(EASY_PATH) && checkFolderHasFiles(MEDIUM_PATH) && checkFolderHasFiles(HARD_PATH);
-
+        boolean unfinished = checkIncompleteFolder();
+        boolean allModesExist = checkDifficultyFolders();
+       
         return new Catalog(unfinished, allModesExist);
+}
+private boolean checkIncompleteFolder() {
+        File folder = new File(INCOMPLETE_DIR);
+        if (!folder.exists() || !folder.isDirectory()) {
+            folder.mkdir(); 
+            return false;
+        }
+
+        File[] files = folder.listFiles();
+        return (files != null && files.length == 2);
     }
 
-
+}
