@@ -272,40 +272,21 @@ public class SudokuController implements Controllable {
             throw new Exception("No games available");
         }
 
-        File randomFile = files[new Random().nextInt(files.length)];
-        int[][] fullBoard = readBoardFromFile(randomFile);
+        File chosen = files[new Random().nextInt(files.length)];
 
-        int[][] board = new int[9][9];
-        for (int i = 0; i < 9; i++) {
-            System.arraycopy(fullBoard[i], 0, board[i], 0, 9);
-        }
+        int[][] board = readBoardFromFile(chosen);
 
-        int removeCount;
-        switch (level) {
-            case 'e':
-                removeCount = 35;
-                break;
-            case 'm':
-                removeCount = 45;
-                break;
-            case 'h':
-                removeCount = 55;
-                break;
-            default:
-                removeCount = 40;
-        }
+        clearIncompleteGame();
+        saveBoardToFile(board, INCOMPLETE_DIR + "current.txt");
 
-        Random r = new Random();
-        while (removeCount > 0) {
-            int x = r.nextInt(9);
-            int y = r.nextInt(9);
+        return board;
+    }
+  // ================= LOAD =================
+    public int[][] loadSelectedGame(File file) throws Exception {
 
-            if (board[x][y] != 0) {
-                board[x][y] = 0;
-                removeCount--;
-            }
-        }
+        int[][] board = readBoardFromFile(file);
 
+        
         clearIncompleteGame();
         saveBoardToFile(board, INCOMPLETE_DIR + "current.txt");
 

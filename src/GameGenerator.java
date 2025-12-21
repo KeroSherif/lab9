@@ -9,7 +9,6 @@ import java.util.Random;
  *
  * @author DANAH
  */
-
 public class GameGenerator {
 
     private SudokuVerifier verifier = new SudokuVerifier();
@@ -26,11 +25,16 @@ public class GameGenerator {
 
         int[][] solvedBoard = loadBoardFromFile(sourcePath);
 
-        if (!verifier.verify(solvedBoard).equals("VALID")) {
+        String state = verifier.verify(solvedBoard);
+
+        
+        if (!state.equals("VALID")) {
             throw new SolutionInvalidException(
-                    "The source file is not a valid solved Sudoku!");
+                    "Source Sudoku must be COMPLETE and VALID. Found: " + state
+            );
         }
 
+        
         Random random = new Random(System.currentTimeMillis());
 
         saveLevel(solvedBoard, 10, DifficultyEnum.EASY, random);
@@ -54,7 +58,6 @@ public class GameGenerator {
             }
         }
 
-        
         storage.saveDifficultyFile(puzzle, diff);
     }
 

@@ -1,3 +1,5 @@
+
+import java.io.File;
 import java.io.IOException;
 
 public interface Controllable {
@@ -16,5 +18,8 @@ public interface Controllable {
 
     void logUserAction(UserAction userAction) throws IOException;
 
-    void clearIncompleteGame();   
+    void clearIncompleteGame();
+
+    int[][] loadSelectedGame(File file) throws Exception;
+
 }

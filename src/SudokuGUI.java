@@ -77,12 +77,61 @@ public class SudokuGUI extends JFrame {
             loadUnfinishedGame();
         } else if (choice == 1) {
             controller.clearIncompleteGame();
-            askDifficultyAndLoad(); // ← NEW RANDOM
+            chooseLevelThenGameFile();
+
         } else {
             System.exit(0);
         }
 
     }
+
+  private void chooseLevelThenGameFile() {
+
+    // -------- Choose Difficulty --------
+    String[] options = {"Easy", "Medium", "Hard"};
+    int choice = JOptionPane.showOptionDialog(
+            this,
+            "Choose difficulty:",
+            "New Game",
+            JOptionPane.DEFAULT_OPTION,
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            options,
+            options[0]
+    );
+
+    if (choice == -1) {
+        return;
+    }
+
+    String baseDir;
+    if (choice == 0) {
+        baseDir = "games/easy";
+    } else if (choice == 1) {
+        baseDir = "games/medium";
+    } else {
+        baseDir = "games/hard";
+    }
+
+    // -------- Choose Game File --------
+    JFileChooser chooser = new JFileChooser(new java.io.File(baseDir));
+    chooser.setDialogTitle("Choose a Sudoku Game");
+
+    int result = chooser.showOpenDialog(this);
+
+    if (result == JFileChooser.APPROVE_OPTION) {
+        try {
+            currentBoard = controller.loadSelectedGame(
+                    chooser.getSelectedFile()
+            );
+            setupGameBoard();
+            setVisible(true);
+        } catch (Exception e) {
+            showError("Error loading selected game: " + e.getMessage());
+        }
+    }
+}
+
 
     private void startNewRandomGame() {
         String[] options = {"Easy", "Medium", "Hard"};
@@ -270,23 +319,22 @@ public class SudokuGUI extends JFrame {
                         e.consume();
                     }
                 }
-                
+
                 @Override
                 public void keyTyped(KeyEvent e) {
                     char ch = e.getKeyChar();
 
-                    
                     // Only allow digits 1-9
                     if (!Character.isDigit(ch)) {
                         e.consume();
                         return;
                     }
-                    
+
                     if (ch < '1' || ch > '9') {
                         e.consume();
                         return;
                     }
-                    
+
                     if (cell.getText().length() >= 1) {
                         e.consume();
                     }
@@ -306,11 +354,10 @@ public class SudokuGUI extends JFrame {
         int prevValue = currentBoard[row][col];
         int newValue = text.isEmpty() ? 0 : Integer.parseInt(text);
 
-        
         // Only log if value actually changed
         if (prevValue != newValue) {
             currentBoard[row][col] = newValue;
-            
+
             try {
                 UserAction action = new UserAction(row, col, newValue, prevValue);
                 controller.logUserAction(action);

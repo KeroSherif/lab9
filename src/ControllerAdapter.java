@@ -9,6 +9,7 @@
  * (Game, Catalog, DifficultyEnum) to enable communication between incompatible layers.
  */
 
+import java.io.File;
 import java.io.IOException;
 
 public class ControllerAdapter implements Controllable {
@@ -180,6 +181,11 @@ public class ControllerAdapter implements Controllable {
 
     @Override
     public void clearIncompleteGame() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public int[][] loadSelectedGame(File file) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }
