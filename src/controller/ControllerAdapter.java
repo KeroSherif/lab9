@@ -27,8 +27,8 @@ public class ControllerAdapter implements Controllable {
 
         // Convert Catalog object to primitive boolean array
         boolean[] result = new boolean[2];
-        result[0] = catalog.hasUnfinished();  // current/unfinished status
-        result[1] = catalog.areModesReady();   // allModesExist
+        result[0] = catalog.hasUnfinished(); 
+        result[1] = catalog.areModesReady();  
 
         return result;
     }
@@ -36,13 +36,23 @@ public class ControllerAdapter implements Controllable {
     @Override
     public int[][] getGame(char level) throws NotFoundException {
 
+        if (level == 'c') {
+            return controller.getGame(DifficultyEnum.INCOMPLETE).getBoard();
+        }
+
         DifficultyEnum difficulty = charToDifficulty(level);
+
         Game game = controller.getGame(difficulty);
 
         String result = controller.verifyGame(game);
 
-        if (result.length() != 81 || result.contains("0")) {
-            throw new NotFoundException("Loaded board is INVALID or INCOMPLETE");
+        boolean isValid
+                = result != null
+                && result.length() == 81
+                && !result.contains("0");
+
+        if (!isValid) {
+            throw new NotFoundException("Loaded board is INVALID");
         }
 
         return game.getBoard();
@@ -145,7 +155,7 @@ public class ControllerAdapter implements Controllable {
 
         int[][] board = parseBoardFile(file);
 
-        // ❌ INCOMPLETE = فيها 0
+        
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
                 if (board[i][j] == 0) {
@@ -154,7 +164,7 @@ public class ControllerAdapter implements Controllable {
             }
         }
 
-        // ❌ INVALID = تكرار
+        
         Game tempGame = new Game(board, DifficultyEnum.EASY);
         String result = controller.verifyGame(tempGame);
 
@@ -162,7 +172,7 @@ public class ControllerAdapter implements Controllable {
             throw new Exception("Board is INVALID");
         }
 
-        // ✅ VALID فقط
+        
         controller.clearIncompleteGame();
         return board;
     }
