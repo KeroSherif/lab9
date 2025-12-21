@@ -119,6 +119,11 @@ public class SudokuController implements Controllable {
         }
     }
 
+    public boolean undoLastMove(int[][] board) throws IOException {
+        UndoLogger logger = new UndoLogger(LOG_FILE);
+        return logger.undoLastMove(board);
+    }
+
     // ================= HELPERS =================
     private int[][] loadBoard(File f) throws NotFoundException {
         int[][] b = new int[9][9];

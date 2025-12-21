@@ -330,12 +330,59 @@ public class SudokuGUI extends JFrame {
     }
     
     private void undoAction() {
-        JOptionPane.showMessageDialog(
-            this,
-            "Undo functionality - implementation depends on controller log management",
-            "Undo",
-            JOptionPane.INFORMATION_MESSAGE
-        );
+        if (currentBoard == null) {
+            JOptionPane.showMessageDialog(this, "No game loaded", "Undo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        try {
+            // Access the undoLastMove method through reflection or direct cast
+            if (controller instanceof SudokuController) {
+                SudokuController sudokuController = (SudokuController) controller;
+                
+                // Debug: Check if log file exists and has content
+                java.io.File logFile = new java.io.File("games/incomplete/moves.log");
+                if (!logFile.exists()) {
+                    JOptionPane.showMessageDialog(this, "No moves have been logged yet", "Undo", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                
+                if (sudokuController.undoLastMove(currentBoard)) {
+                    refreshBoard();
+                    statusLabel.setText("Status: Last move undone");
+                    JOptionPane.showMessageDialog(this, "Last move undone!", "Undo", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, "No moves to undo", "Undo", JOptionPane.WARNING_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Controller doesn't support undo", "Undo", JOptionPane.WARNING_MESSAGE);
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error undoing: " + e.getMessage(), "Undo", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
+    
+    private void refreshBoard() {
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                int value = currentBoard[i][j];
+                String displayText = value == 0 ? "" : String.valueOf(value);
+                // Remove listeners temporarily to avoid triggering key events
+                KeyListener[] listeners = cells[i][j].getKeyListeners();
+                for (KeyListener listener : listeners) {
+                    cells[i][j].removeKeyListener(listener);
+                }
+                
+                cells[i][j].setText(displayText);
+                
+                // Re-add listeners
+                for (KeyListener listener : listeners) {
+                    cells[i][j].addKeyListener(listener);
+                }
+            }
+        }
+        updateSolveButtonState();
     }
     
     private void updateSolveButtonState() {

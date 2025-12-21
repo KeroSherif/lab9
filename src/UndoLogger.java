@@ -41,9 +41,9 @@ public class UndoLogger {
         last = last.replace("(", "").replace(")", "");
         String[] parts = last.split(",");
 
-        int x = Integer.parseInt(parts[0]);
-        int y = Integer.parseInt(parts[1]);
-        int prev = Integer.parseInt(parts[3]);
+        int x = Integer.parseInt(parts[0].trim());
+        int y = Integer.parseInt(parts[1].trim());
+        int prev = Integer.parseInt(parts[3].trim());
 
         board[x][y] = prev;
 
