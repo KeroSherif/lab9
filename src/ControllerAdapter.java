@@ -11,6 +11,9 @@
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Scanner;
 
 public class ControllerAdapter implements Controllable {
     
@@ -73,12 +76,8 @@ public class ControllerAdapter implements Controllable {
      */
     @Override
     public void driveGames(String sourcePath) throws SolutionInvalidException {
-        // TODO: Load game from file path and convert to Game object
-        // For now, create a dummy game to pass to controller
-        int[][] dummyBoard = new int[9][9];
-        Game sourceGame = new Game(dummyBoard, DifficultyEnum.EASY);
-        
-        // Call controller with object
+        int[][] board = parseBoardFile(new File(sourcePath));
+        Game sourceGame = new Game(board);
         controller.driveGames(sourceGame);
     }
     
@@ -97,17 +96,24 @@ public class ControllerAdapter implements Controllable {
         // Call controller with object
         String verificationResult = controller.verifyGame(gameObj);
         
-        // Convert String result to primitive boolean[][]
-        // Simplified: return all true if "VALID", all false otherwise
+        // Convert encoded 81-char string to boolean[][] grid
         boolean[][] result = new boolean[9][9];
-        boolean isValid = verificationResult.equals("VALID");
-        
+        if (verificationResult.length() != 81) {
+            // Fallback: treat as all-valid if unexpected format
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 9; j++) {
+                    result[i][j] = true;
+                }
+            }
+            return result;
+        }
+
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
-                result[i][j] = isValid;
+                char ch = verificationResult.charAt(i * 9 + j);
+                result[i][j] = (ch == '1');
             }
         }
-        
         return result;
     }
     
@@ -124,7 +130,6 @@ public class ControllerAdapter implements Controllable {
         // Convert primitive int[][] to Game object
         Game gameObj = new Game(game, DifficultyEnum.EASY); // Default difficulty
         
-        // Call controller with object (returns flat int[])
         int[] flatSolution = controller.solveGame(gameObj);
         
         // Convert flat int[] back to 2D primitive int[][]
@@ -176,21 +181,61 @@ public class ControllerAdapter implements Controllable {
 
     @Override
     public int[][] getRandomGame(char level) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        // Delegate to facade's underlying primitive controller via added methods
+        if (controller instanceof ControllerFacade) {
+            ControllerFacade facade = (ControllerFacade) controller;
+            // Use the primitive controller through facade.getGame with difficulty
+            DifficultyEnum diff = charToDifficulty(level);
+            Game g = facade.getGame(diff);
+            return g.getBoard();
+        }
+        throw new UnsupportedOperationException("Random game not supported by controller");
     }
 
     @Override
     public void clearIncompleteGame() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        controller.clearIncompleteGame();
     }
 
     @Override
     public int[][] loadSelectedGame(File file) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        // Read the selected file and return the board; also clear incomplete via controller
+        int[][] board = parseBoardFile(file);
+        controller.clearIncompleteGame();
+        // Persist current board to incomplete/current.txt through facade
+        // The primitive controller will save when game is loaded normally,
+        // here we simply return the board for the GUI to use.
+        return board;
     }
     
     @Override
     public void deleteCompletedGame() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        controller.deleteCompletedGame();
+    }
+
+    @Override
+    public boolean undoLastMove(int[][] board) throws IOException {
+        // Use the shared log file location in games/incomplete
+        String logPath = "games/incomplete/moves.log";
+        if (!Files.exists(Paths.get(logPath))) return false;
+        UndoLogger ul = new UndoLogger(logPath);
+        return ul.undoLastMove(board);
+    }
+
+    private int[][] parseBoardFile(File file) throws SolutionInvalidException {
+        int[][] board = new int[9][9];
+        try (Scanner sc = new Scanner(file)) {
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 9; j++) {
+                    if (!sc.hasNextInt()) {
+                        throw new SolutionInvalidException("Invalid board format in file: " + file.getName());
+                    }
+                    board[i][j] = sc.nextInt();
+                }
+            }
+        } catch (IOException e) {
+            throw new SolutionInvalidException("Failed to read file: " + e.getMessage());
+        }
+        return board;
     }
 }

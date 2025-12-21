@@ -26,4 +26,14 @@ public class SimpleFacade implements SimpleViewable {
     public void logUserAction(String userAction) throws IOException {
         System.out.println("LOG: " + userAction);
     }
+
+    @Override
+    public void clearIncompleteGame() {
+        // No-op for simple facade
+    }
+
+    @Override
+    public void deleteCompletedGame() {
+        // No-op for simple facade
+    }
 }

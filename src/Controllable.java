@@ -25,4 +25,7 @@ public interface Controllable {
     // Delete completed game from difficulty folder and clear incomplete folder
     void deleteCompletedGame();
 
+    // Undo the last logged move, updating the provided board
+    boolean undoLastMove(int[][] board) throws IOException;
+
 }

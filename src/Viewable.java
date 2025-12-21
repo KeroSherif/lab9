@@ -21,4 +21,9 @@ public interface Viewable {
     int[] solveGame(Game game) throws InvalidGameException;
     
     void logUserAction(String userAction) throws IOException;
+
+    // Additional controller-side operations used via the adapter
+    void clearIncompleteGame();
+
+    void deleteCompletedGame();
 }

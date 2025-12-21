@@ -180,13 +180,13 @@ public class SudokuController implements Controllable {
         }
 
         // Use MultiThreadedSudokuSolver (permutation-based)
-        int[] result = MultiThreadedSudokuSolver.solve(copy);
+        int[][] solved = MultiThreadedSudokuSolver.solveBoard(copy);
 
-        if (result == null) {
+        if (solved == null) {
             throw new InvalidGameException("No solution exists");
         }
 
-        return copy;
+        return solved;
     }
 
     private int countEmptyCells(int[][] board) {

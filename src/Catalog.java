@@ -16,7 +16,7 @@ public class Catalog {
     private ArrayList<Game> games;
     private int currentIndex;
 
-    private boolean unfinished;
+    private boolean current;
     private boolean allModesExist;
 
     public Catalog() {
@@ -24,16 +24,16 @@ public class Catalog {
         currentIndex = 0;
     }
 
-    public Catalog(boolean unfinished, boolean allModesExist) {
+    public Catalog(boolean current, boolean allModesExist) {
         this();
-        this.unfinished = unfinished;
+        this.current = current;
         this.allModesExist = allModesExist;
     }
 
     // ================= FLAGS =================
 
     public boolean hasUnfinished() {
-        return unfinished;
+        return current;
     }
 
     public boolean areModesReady() {
@@ -41,7 +41,7 @@ public class Catalog {
     }
 
     public void setUnfinished(boolean unfinished) {
-        this.unfinished = unfinished;
+        this.current = unfinished;
     }
 
     public void setAllModesExist(boolean allModesExist) {

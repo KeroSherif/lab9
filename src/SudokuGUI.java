@@ -120,12 +120,9 @@ public class SudokuGUI extends JFrame {
 
         if (result == JFileChooser.APPROVE_OPTION) {
             try {
-                if (controller instanceof SudokuController) {
-                    SudokuController sudokuController = (SudokuController) controller;
-                    currentBoard = sudokuController.loadSelectedGame(chooser.getSelectedFile());
-                    setupGameBoard();
-                    setVisible(true);
-                }
+                currentBoard = controller.loadSelectedGame(chooser.getSelectedFile());
+                setupGameBoard();
+                setVisible(true);
             } catch (Exception e) {
                 showError("Error loading selected game: " + e.getMessage());
                 System.exit(0);
@@ -415,28 +412,21 @@ public class SudokuGUI extends JFrame {
         }
 
         try {
-            if (controller instanceof SudokuController) {
-                SudokuController sudokuController = (SudokuController) controller;
-
-                java.io.File logFile = new java.io.File("games/incomplete/moves.log");
-                if (!logFile.exists()) {
-                    JOptionPane.showMessageDialog(this, "No moves have been logged yet", 
-                        "Undo", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-
-                if (sudokuController.undoLastMove(currentBoard)) {
-                    refreshBoard();
-                    statusLabel.setText("Status: Last move undone");
-                    JOptionPane.showMessageDialog(this, "Last move undone!", "Undo", 
-                        JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    JOptionPane.showMessageDialog(this, "No moves to undo", "Undo", 
-                        JOptionPane.WARNING_MESSAGE);
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "Controller doesn't support undo", 
+            java.io.File logFile = new java.io.File("games/incomplete/moves.log");
+            if (!logFile.exists()) {
+                JOptionPane.showMessageDialog(this, "No moves have been logged yet", 
                     "Undo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (controller.undoLastMove(currentBoard)) {
+                refreshBoard();
+                statusLabel.setText("Status: Last move undone");
+                JOptionPane.showMessageDialog(this, "Last move undone!", "Undo", 
+                    JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "No moves to undo", "Undo", 
+                    JOptionPane.WARNING_MESSAGE);
             }
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Error undoing: " + e.getMessage(), 

@@ -7,9 +7,19 @@
  * Role: Business logic layer that manages game operations using rich domain objects.
  */
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class ControllerFacade implements Viewable {
+    private final SudokuController primitiveController;
+
+    public ControllerFacade() {
+        this.primitiveController = new SudokuController();
+    }
     
     /**
      * Retrieves the catalog information containing game status metadata.
@@ -18,9 +28,9 @@ public class ControllerFacade implements Viewable {
      */
     @Override
     public Catalog getCatalog() {
-        // TODO: Implement actual catalog retrieval logic
-        // For now, return a dummy catalog
-        return new Catalog(false, true);
+        boolean[] flags = primitiveController.getCatalog();
+        // flags[0] = has unfinished, flags[1] = all modes exist
+        return new Catalog(flags[0], flags[1]);
     }
     
     /**
@@ -32,10 +42,14 @@ public class ControllerFacade implements Viewable {
      */
     @Override
     public Game getGame(DifficultyEnum level) throws NotFoundException {
-        // TODO: Implement actual game retrieval logic
-        // For now, return a dummy 9x9 board
-        int[][] dummyBoard = new int[9][9];
-        return new Game(dummyBoard, level);
+        char ch = switch (level) {
+            case EASY -> 'e';
+            case MEDIUM -> 'm';
+            case HARD -> 'h';
+            case INCOMPLETE -> 'c';
+        };
+        int[][] board = primitiveController.getGame(ch);
+        return new Game(board, level);
     }
     
     /**
@@ -46,8 +60,21 @@ public class ControllerFacade implements Viewable {
      */
     @Override
     public void driveGames(Game sourceGame) throws SolutionInvalidException {
-        // TODO: Implement game generation logic
-        // Stub method - no implementation yet
+        // Write the provided solved board to a temp file and delegate
+        String tempPath = "games/source-temp.txt";
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(tempPath))) {
+            int[][] board = sourceGame.getBoard();
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 9; j++) {
+                    bw.write(board[i][j] + " ");
+                }
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            throw new SolutionInvalidException("Failed to write temp source file: " + e.getMessage());
+        }
+
+        primitiveController.driveGames(tempPath);
     }
     
     /**
@@ -58,9 +85,15 @@ public class ControllerFacade implements Viewable {
      */
     @Override
     public String verifyGame(Game game) {
-        // TODO: Implement game verification logic
-        // For now, return a dummy result
-        return "VALID";
+        // Delegate to primitive controller and encode per-cell validity
+        boolean[][] grid = primitiveController.verifyGame(game.getBoard());
+        StringBuilder sb = new StringBuilder(81);
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                sb.append(grid[i][j] ? '1' : '0');
+            }
+        }
+        return sb.toString();
     }
     
     /**
@@ -72,9 +105,14 @@ public class ControllerFacade implements Viewable {
      */
     @Override
     public int[] solveGame(Game game) throws InvalidGameException {
-        // TODO: Implement solving logic
-        // For now, return a dummy solution (81 elements for 9x9 board)
-        return new int[81];
+        int[][] solved = primitiveController.solveGame(game.getBoard());
+        int[] flat = new int[81];
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                flat[i * 9 + j] = solved[i][j];
+            }
+        }
+        return flat;
     }
     
     /**
@@ -85,8 +123,21 @@ public class ControllerFacade implements Viewable {
      */
     @Override
     public void logUserAction(String userAction) throws IOException {
-        // TODO: Implement actual logging logic
-        // For now, just print to console
-        System.out.println("LOG: " + userAction);
+        // Append to the moves log in the incomplete directory
+        Files.createDirectories(Paths.get("games/incomplete"));
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("games/incomplete/moves.log", true))) {
+            bw.write(userAction);
+            bw.newLine();
+        }
+    }
+
+    @Override
+    public void clearIncompleteGame() {
+        primitiveController.clearIncompleteGame();
+    }
+
+    @Override
+    public void deleteCompletedGame() {
+        primitiveController.deleteCompletedGame();
     }
 }
