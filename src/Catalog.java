@@ -8,10 +8,6 @@ package lab9;
  *
  * @author DANAH
  */
-public enum DifficultyEnum {
-    EASY, MEDIUM, HARD
-}
-
 public class Catalog {
     private final boolean unfinished;
     private final boolean allModesExist;
@@ -20,5 +16,12 @@ public class Catalog {
         this.unfinished = unfinished;
         this.allModesExist = allModesExist;
     }
-    
+    public boolean hasUnfinishedGame() {
+        return unfinished;
+    }
+
+    public boolean areAllModesReady() {
+        return allModesExist;
+    }
 }
+
