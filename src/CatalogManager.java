@@ -9,8 +9,10 @@ package lab9;
  * @author DANAH
  */
 public class CatalogManager {
+    private final String EASY_PATH = "easy/";
+    private final String MEDIUM_PATH = "medium/";
+    private final String HARD_PATH = "hard/";
     private final String INCOMPLETE_PATH = "incomplete/";
-    private final String[] MODES = {"easy", "medium", "hard"};
     
 public Catalog getCatalog() {
         File incompleteDir = new File(INCOMPLETE_PATH);
