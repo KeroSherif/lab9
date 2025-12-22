@@ -1,0 +1,122 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package storage;
+
+import model.*;
+import exceptions.*;
+
+import java.io.*;
+import java.util.*;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+/**
+ *
+ * @author DANAH
+ */
+
+
+public class StorageManager {
+
+    private final String INCOMPLETE_DIR = "games/incomplete/";
+    private final String GAME_FILE = "games/incomplete/game.txt";
+    private final String LOG_FILE = "games/incomplete/log.txt";
+
+    public void saveIncompleteGame(int[][] board, String moveLog)
+            throws IOException {
+
+        File dir = new File(INCOMPLETE_DIR);
+        if (!dir.exists()) dir.mkdir();
+
+        saveBoard(board, GAME_FILE);
+        saveLog(moveLog, LOG_FILE);
+
+        System.out.println("Rule 3 Enforced: 2 files saved in /incomplete.");
+    }
+
+    public void deleteIncompleteGame() {
+
+        File game = new File(GAME_FILE);
+        File log = new File(LOG_FILE);
+
+        if (game.exists()) game.delete();
+        if (log.exists()) log.delete();
+
+        System.out.println("Incomplete folder wiped (0 files).");
+    }
+
+    private void saveBoard(int[][] board, String path)
+            throws IOException {
+
+        try (PrintWriter out =
+                     new PrintWriter(new FileWriter(path))) {
+
+            for (int r = 0; r < 9; r++) {
+                for (int c = 0; c < 9; c++) {
+                    out.print(board[r][c] + (c == 8 ? "" : " "));
+                }
+                out.println();
+            }
+        }
+    }
+
+    private void saveLog(String log, String path)
+            throws IOException {
+
+        try (PrintWriter out =
+                     new PrintWriter(new FileWriter(path))) {
+            out.print(log);
+        }
+    }
+
+    public void saveDifficultyFile(int[][] board, DifficultyEnum diff) {
+
+        String folderPath;
+
+        switch (diff) {
+            case EASY:
+                folderPath = "games/easy/";
+                break;
+            case MEDIUM:
+                folderPath = "games/medium/";
+                break;
+            case HARD:
+                folderPath = "games/hard/";
+                break;
+            default:
+                folderPath = "games/easy/";
+        }
+
+        File dir = new File(folderPath);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        File targetFile = new File(dir, "puzzle.txt");
+
+        try (PrintWriter writer =
+                     new PrintWriter(new FileWriter(targetFile))) {
+
+            for (int r = 0; r < 9; r++) {
+                for (int c = 0; c < 9; c++) {
+                    writer.print(board[r][c]);
+                    if (c < 8) writer.print(" ");
+                }
+                writer.println();
+            }
+
+            System.out.println(
+                    "Successfully saved " + diff +
+                            " puzzle to " + targetFile.getPath());
+
+        } catch (IOException e) {
+            System.err.println(
+                    "Error saving difficulty file: " + e.getMessage());
+        }
+    }
+}
