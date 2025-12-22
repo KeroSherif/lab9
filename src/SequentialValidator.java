@@ -6,7 +6,7 @@ public class SequentialValidator implements SudokuValidator {
 
     private SequentialValidator() {}
 
-    public static synchronized SequentialValidator getInstance() {
+    public static SequentialValidator getInstance() {
         if (instance == null)
             instance = new SequentialValidator();
         return instance;

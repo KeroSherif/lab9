@@ -218,6 +218,7 @@ public class SudokuController implements Controllable {
     public void saveIncompleteGame(int[][] board) throws IOException {
         clearIncompleteGame();
         saveBoardToFile(board, INCOMPLETE_DIR + "current.txt");
+        new java.io.File(LOG_FILE).createNewFile();
     }
 
     @Override
