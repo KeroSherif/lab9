@@ -6,7 +6,6 @@ package model;
 
 
 /**
- * Game class - Represents a Sudoku game with board and difficulty level
  * 
  * @author DANAH
  */
@@ -19,7 +18,7 @@ public class Game {
         this.level = level;
     }
 
-    // ⬅️ الكونستركتور الجديد
+    
     public Game(int[][] board) {
         this.board = board;
         this.level = DifficultyEnum.INCOMPLETE;

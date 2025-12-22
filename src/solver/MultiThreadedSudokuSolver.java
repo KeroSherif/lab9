@@ -66,8 +66,7 @@ public class MultiThreadedSudokuSolver {
         return solutionBox.getSolution();
     }
 
-    // Fills the provided board in-place with the found solution values for the 5 empty cells.
-    // Returns the mutated board if a solution is found; otherwise returns null.
+   
     public static int[][] solveBoard(int[][] board) {
         int[][] empty = new int[5][2];
         int idx = 0;

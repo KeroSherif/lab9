@@ -32,17 +32,22 @@ public class UndoLogger {
     }
 
     public boolean undoLastMove(int[][] board) throws IOException {
-        if (!logFile.exists()) return false;
+        if (!logFile.exists()) {
+            return false;
+        }
 
         List<String> lines = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(logFile))) {
             String line;
-            while ((line = br.readLine()) != null)
+            while ((line = br.readLine()) != null) {
                 lines.add(line);
+            }
         }
 
-        if (lines.isEmpty()) return false;
+        if (lines.isEmpty()) {
+            return false;
+        }
 
         String last = lines.remove(lines.size() - 1);
         last = last.replace("(", "").replace(")", "");
@@ -55,12 +60,11 @@ public class UndoLogger {
         board[x][y] = prev;
 
         try (FileWriter fw = new FileWriter(logFile, false)) {
-            for (String l : lines)
+            for (String l : lines) {
                 fw.write(l + "\n");
+            }
         }
 
         return true;
     }
 }
-
-

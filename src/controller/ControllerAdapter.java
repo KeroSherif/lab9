@@ -36,59 +36,38 @@ public class ControllerAdapter implements Controllable {
         return result;
     }
     
-    /**
-     * Gets a game board as primitive 2D array based on difficulty character.
-     * Converts from char to DifficultyEnum, calls controller, converts Game to int[][].
-     * 
-     * @param level Character representing difficulty ('E'=EASY, 'M'=MEDIUM, 'H'=HARD)
-     * @return int[][] the game board as primitive 2D array
-     * @throws NotFoundException if no game exists for the specified level
-     */
+   
     @Override
     public int[][] getGame(char level) throws NotFoundException {
-        // Convert primitive char to DifficultyEnum object
+        
         DifficultyEnum difficulty = charToDifficulty(level);
         
-        // Call controller with object
+        
         Game game = controller.getGame(difficulty);
         
-        // Convert Game object back to primitive int[][]
-        return game.getBoard();
+                return game.getBoard();
     }
     
-    /**
-     * Drives game generation from a file path.
-     * Converts from String path to Game object, calls controller.
-     * 
-     * @param sourcePath Path to the source game file
-     * @throws SolutionInvalidException if the source game solution is invalid
-     */
+    
     @Override
     public void driveGames(String sourcePath) throws SolutionInvalidException {
         int[][] board = parseBoardFile(new File(sourcePath));
         Game sourceGame = new Game(board);
         controller.driveGames(sourceGame);
     }
-    
-    /**
-     * Verifies a game board passed as primitive 2D array.
-     * Converts int[][] to Game object, calls controller, converts String to boolean[][].
-     * 
-     * @param game The game board as primitive 2D array
-     * @return boolean[][] verification results for each cell
-     */
+ 
     @Override
     public boolean[][] verifyGame(int[][] game) {
-        // Convert primitive int[][] to Game object
-        Game gameObj = new Game(game, DifficultyEnum.EASY); // Default difficulty
         
-        // Call controller with object
+        Game gameObj = new Game(game, DifficultyEnum.EASY); 
+        
+        
         String verificationResult = controller.verifyGame(gameObj);
         
-        // Convert encoded 81-char string to boolean[][] grid
+        
         boolean[][] result = new boolean[9][9];
         if (verificationResult.length() != 81) {
-            // Fallback: treat as all-valid if unexpected format
+           
             for (int i = 0; i < 9; i++) {
                 for (int j = 0; j < 9; j++) {
                     result[i][j] = true;
@@ -106,22 +85,15 @@ public class ControllerAdapter implements Controllable {
         return result;
     }
     
-    /**
-     * Solves a game board passed as primitive 2D array.
-     * Converts int[][] to Game object, calls controller, converts int[] to int[][].
-     * 
-     * @param game The game board to solve as primitive 2D array
-     * @return int[][] the solved board as primitive 2D array
-     * @throws InvalidGameException if the game cannot be solved
-     */
+    
     @Override
     public int[][] solveGame(int[][] game) throws InvalidGameException {
-        // Convert primitive int[][] to Game object
-        Game gameObj = new Game(game, DifficultyEnum.EASY); // Default difficulty
+        
+        Game gameObj = new Game(game, DifficultyEnum.EASY); 
         
         int[] flatSolution = controller.solveGame(gameObj);
         
-        // Convert flat int[] back to 2D primitive int[][]
+       
         int[][] solution = new int[9][9];
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
@@ -132,29 +104,17 @@ public class ControllerAdapter implements Controllable {
         return solution;
     }
     
-    /**
-     * Logs a user action passed as UserAction object.
-     * Converts UserAction object to String, calls controller.
-     * 
-     * @param userAction The user action object containing action details
-     * @throws IOException if logging fails
-     */
+    
     @Override
     public void logUserAction(UserAction userAction) throws IOException {
-        // Convert UserAction object to String
+       
         String actionString = userAction.toString();
         
-        // Call controller with String
+        
         controller.logUserAction(actionString);
     }
     
-    /**
-     * Helper method: Converts primitive char to DifficultyEnum object.
-     * 
-     * @param level Character representing difficulty
-     * @return DifficultyEnum corresponding to the character
-     * @throws IllegalArgumentException if character is invalid
-     */
+  
     private DifficultyEnum charToDifficulty(char level) {
         switch (Character.toUpperCase(level)) {
             case 'E':
@@ -190,12 +150,10 @@ public class ControllerAdapter implements Controllable {
 
     @Override
     public int[][] loadSelectedGame(File file) throws Exception {
-        // Read the selected file and return the board; also clear incomplete via controller
+        
         int[][] board = parseBoardFile(file);
         controller.clearIncompleteGame();
-        // Persist current board to incomplete/current.txt through facade
-        // The primitive controller will save when game is loaded normally,
-        // here we simply return the board for the GUI to use.
+        
         return board;
     }
     
@@ -206,7 +164,7 @@ public class ControllerAdapter implements Controllable {
 
     @Override
     public boolean undoLastMove(int[][] board) throws IOException {
-        // Use the shared log file location in games/incomplete
+        
         String logPath = "games/incomplete/moves.log";
         if (!Files.exists(Paths.get(logPath))) return false;
         UndoLogger ul = new UndoLogger(logPath);
@@ -215,7 +173,7 @@ public class ControllerAdapter implements Controllable {
 
     @Override
     public void saveCurrentGame(int[][] board) throws IOException {
-        // Delegate to the primitive controller via facade
+        
         if (controller instanceof ControllerFacade) {
             ControllerFacade facade = (ControllerFacade) controller;
             facade.saveCurrentGame(board);
