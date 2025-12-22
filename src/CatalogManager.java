@@ -1,48 +1,42 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-
+// ==================== CatalogManager.java - FIXED ====================
 import java.io.File;
-/**
- *
- * @author DANAH
- */
+
 public class CatalogManager {
-   private final String EASY_DIR = "easy";
-    private final String MEDIUM_DIR = "medium";
-    private final String HARD_DIR = "hard";
-    private final String INCOMPLETE_DIR = "incomplete";
+    private final String EASY_DIR = "games/easy";      // ✅ Fixed path
+    private final String MEDIUM_DIR = "games/medium";  // ✅ Fixed path
+    private final String HARD_DIR = "games/hard";      // ✅ Fixed path
+    private final String INCOMPLETE_DIR = "games/incomplete";  // ✅ Fixed path
     
-public Catalog getCatalog() {
+    public Catalog getCatalog() {
         boolean unfinished = checkIncompleteFolder();
         boolean allModesExist = checkDifficultyFolders();
-       
         return new Catalog(unfinished, allModesExist);
-}
-private boolean checkIncompleteFolder() {
+    }
+    
+    private boolean checkIncompleteFolder() {
         File folder = new File(INCOMPLETE_DIR);
         if (!folder.exists() || !folder.isDirectory()) {
-            folder.mkdir(); 
+            folder.mkdirs();  // Create if doesn't exist
             return false;
         }
 
         File[] files = folder.listFiles();
+        // Must have EXACTLY 2 files (current.txt + moves.log) or 0 files
         return (files != null && files.length == 2);
     }
-private boolean checkDifficultyFolders() {
+    
+    private boolean checkDifficultyFolders() {
         return hasFiles(EASY_DIR) && hasFiles(MEDIUM_DIR) && hasFiles(HARD_DIR);
     }
 
     private boolean hasFiles(String path) {
         File dir = new File(path);
         if (!dir.exists()) {
-            dir.mkdir();
+            dir.mkdirs();  // Create if doesn't exist
             return false;
         }
         
-       File[] files = dir.listFiles();
+        File[] files = dir.listFiles();
         return (files != null && files.length > 0);
     }
-} 
-
+}
