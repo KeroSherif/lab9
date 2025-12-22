@@ -26,4 +26,6 @@ public interface Viewable {
     void clearIncompleteGame();
 
     void deleteCompletedGame();
+
+    void saveCurrentGame(int[][] board) throws IOException;
 }

@@ -28,4 +28,7 @@ public interface Controllable {
     // Undo the last logged move, updating the provided board
     boolean undoLastMove(int[][] board) throws IOException;
 
+    // Save current game state to incomplete folder
+    void saveCurrentGame(int[][] board) throws IOException;
+
 }

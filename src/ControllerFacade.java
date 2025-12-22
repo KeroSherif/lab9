@@ -140,4 +140,9 @@ public class ControllerFacade implements Viewable {
     public void deleteCompletedGame() {
         primitiveController.deleteCompletedGame();
     }
+
+    @Override
+    public void saveCurrentGame(int[][] board) throws IOException {
+        primitiveController.saveCurrentGame(board);
+    }
 }

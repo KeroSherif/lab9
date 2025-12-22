@@ -174,6 +174,8 @@ public class ControllerAdapter implements Controllable {
                 return DifficultyEnum.MEDIUM;
             case 'H':
                 return DifficultyEnum.HARD;
+            case 'C':
+                return DifficultyEnum.INCOMPLETE;
             default:
                 throw new IllegalArgumentException("Invalid difficulty level: " + level);
         }
@@ -220,6 +222,15 @@ public class ControllerAdapter implements Controllable {
         if (!Files.exists(Paths.get(logPath))) return false;
         UndoLogger ul = new UndoLogger(logPath);
         return ul.undoLastMove(board);
+    }
+
+    @Override
+    public void saveCurrentGame(int[][] board) throws IOException {
+        // Delegate to the primitive controller via facade
+        if (controller instanceof ControllerFacade) {
+            ControllerFacade facade = (ControllerFacade) controller;
+            facade.saveCurrentGame(board);
+        }
     }
 
     private int[][] parseBoardFile(File file) throws SolutionInvalidException {

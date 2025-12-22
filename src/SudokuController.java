@@ -214,6 +214,11 @@ public class SudokuController implements Controllable {
         return new UndoLogger(LOG_FILE).undoLastMove(board);
     }
 
+    @Override
+    public void saveCurrentGame(int[][] board) throws IOException {
+        saveBoardToFile(board, INCOMPLETE_DIR + "current.txt");
+    }
+
     // ================= SAVE / LOAD =================
     public void saveIncompleteGame(int[][] board) throws IOException {
         clearIncompleteGame();

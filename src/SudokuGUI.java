@@ -306,6 +306,7 @@ public class SudokuGUI extends JFrame {
             try {
                 UserAction action = new UserAction(row, col, newValue, prevValue);
                 controller.logUserAction(action);
+                controller.saveCurrentGame(currentBoard);
             } catch (IOException e) {
                 showError("Error logging action: " + e.getMessage());
             }
