@@ -12,7 +12,6 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 
-
 public class SudokuGUI extends JFrame {
 
     private JTextField[][] cells;
@@ -50,10 +49,12 @@ public class SudokuGUI extends JFrame {
 
             if (hasUnfinished) {
                 askContinueOrNewGame();
-            } else if (hasAllLevels) {
-                chooseLevelThenGameFile();
-            } else {
+            } else if (!hasAllLevels) {
+
                 askForSourceSolution();
+            } else {
+
+                chooseLevelThenGameFile();
             }
         } catch (Exception e) {
             showError("Error checking game catalog: " + e.getMessage());
@@ -84,7 +85,7 @@ public class SudokuGUI extends JFrame {
     }
 
     private void chooseLevelThenGameFile() {
-        // Choose Difficulty
+
         String[] options = {"Easy", "Medium", "Hard"};
         int choice = JOptionPane.showOptionDialog(
                 this,
@@ -102,21 +103,11 @@ public class SudokuGUI extends JFrame {
             return;
         }
 
-        String baseDir;
-        if (choice == 0) {
-            baseDir = "games/easy";
-        } else if (choice == 1) {
-            baseDir = "games/medium";
-        } else {
-            baseDir = "games/hard";
-        }
-
-        // Choose Game File
-        JFileChooser chooser = new JFileChooser(new java.io.File(baseDir));
-        chooser.setDialogTitle("Choose a Sudoku Game");
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Select Solved Sudoku File");
         chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
             @Override
-            public boolean accept(java.io.File f) {
+            public boolean accept(File f) {
                 return f.isDirectory() || f.getName().toLowerCase().endsWith(".txt");
             }
 
@@ -127,17 +118,23 @@ public class SudokuGUI extends JFrame {
         });
 
         int result = chooser.showOpenDialog(this);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            System.exit(0);
+            return;
+        }
 
-        if (result == JFileChooser.APPROVE_OPTION) {
-            try {
-                currentBoard = controller.loadSelectedGame(chooser.getSelectedFile());
-                setupGameBoard();
-                setVisible(true);
-            } catch (Exception e) {
-                showError("Error loading selected game: " + e.getMessage());
-                System.exit(0);
-            }
-        } else {
+        try {
+
+            controller.driveGames(chooser.getSelectedFile().getAbsolutePath());
+
+            char level = (choice == 0) ? 'E' : (choice == 1) ? 'M' : 'H';
+            currentBoard = controller.getGame(level);
+
+            setupGameBoard();
+            setVisible(true);
+
+        } catch (Exception e) {
+            showError("Error loading game: " + e.getMessage());
             System.exit(0);
         }
     }
@@ -271,8 +268,8 @@ public class SudokuGUI extends JFrame {
             cell.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
-                    if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE || 
-                        e.getKeyCode() == KeyEvent.VK_DELETE) {
+                    if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE
+                            || e.getKeyCode() == KeyEvent.VK_DELETE) {
                         e.consume();
                     }
                 }
@@ -417,31 +414,31 @@ public class SudokuGUI extends JFrame {
 
     private void undoAction() {
         if (currentBoard == null) {
-            JOptionPane.showMessageDialog(this, "No game loaded", "Undo", 
-                JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "No game loaded", "Undo",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         try {
             java.io.File logFile = new java.io.File("games/incomplete/moves.log");
             if (!logFile.exists()) {
-                JOptionPane.showMessageDialog(this, "No moves have been logged yet", 
-                    "Undo", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "No moves have been logged yet",
+                        "Undo", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
             if (controller.undoLastMove(currentBoard)) {
                 refreshBoard();
                 statusLabel.setText("Status: Last move undone");
-                JOptionPane.showMessageDialog(this, "Last move undone!", "Undo", 
-                    JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Last move undone!", "Undo",
+                        JOptionPane.INFORMATION_MESSAGE);
             } else {
-                JOptionPane.showMessageDialog(this, "No moves to undo", "Undo", 
-                    JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "No moves to undo", "Undo",
+                        JOptionPane.WARNING_MESSAGE);
             }
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Error undoing: " + e.getMessage(), 
-                "Undo", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error undoing: " + e.getMessage(),
+                    "Undo", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }
@@ -451,7 +448,7 @@ public class SudokuGUI extends JFrame {
             for (int j = 0; j < 9; j++) {
                 int value = currentBoard[i][j];
                 String displayText = value == 0 ? "" : String.valueOf(value);
-                
+
                 KeyListener[] listeners = cells[i][j].getKeyListeners();
                 for (KeyListener listener : listeners) {
                     cells[i][j].removeKeyListener(listener);
@@ -508,14 +505,14 @@ public class SudokuGUI extends JFrame {
             if (isValid) {
                 // Delete completed game as per Lab 10 requirements
                 controller.deleteCompletedGame();
-                
+
                 JOptionPane.showMessageDialog(
                         this,
                         "Congratulations! Puzzle solved correctly!\nThe game has been removed.",
                         "Success",
                         JOptionPane.INFORMATION_MESSAGE
                 );
-                
+
                 // Ask if user wants to play another game
                 int choice = JOptionPane.showConfirmDialog(
                         this,
@@ -523,7 +520,7 @@ public class SudokuGUI extends JFrame {
                         "Play Again",
                         JOptionPane.YES_NO_OPTION
                 );
-                
+
                 if (choice == JOptionPane.YES_OPTION) {
                     dispose();
                     new SudokuGUI(controller);
