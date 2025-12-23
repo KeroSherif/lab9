@@ -22,6 +22,8 @@ public class SudokuGUI extends JFrame {
     private Controllable controller;
     private int[][] currentBoard;
     private boolean[][] fixedCells;
+    private boolean isContinueGame = false;
+    
 
     public SudokuGUI(Controllable controller) {
         this.controller = controller;
@@ -250,14 +252,15 @@ public class SudokuGUI extends JFrame {
 
         int value = currentBoard[row][col];
 
-        if (value != 0) {
+        if (value != 0 && !isContinueGame) {
             cell.setText(String.valueOf(value));
             cell.setEditable(false);
             cell.setBackground(new Color(230, 230, 230));
             cell.setForeground(Color.BLACK);
             fixedCells[row][col] = true;
         } else {
-            cell.setText("");
+            cell.setText(value == 0 ? "" : String.valueOf(value));
+            cell.setEditable(true);
             cell.setBackground(Color.WHITE);
             cell.setForeground(new Color(0, 100, 200));
             fixedCells[row][col] = false;
@@ -266,6 +269,7 @@ public class SudokuGUI extends JFrame {
             final int c = col;
 
             cell.addKeyListener(new KeyAdapter() {
+
                 @Override
                 public void keyPressed(KeyEvent e) {
                     if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE
